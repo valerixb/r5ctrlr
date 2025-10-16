@@ -12,8 +12,8 @@
 // It's interfaced via a Xilinx standard AXI (quad) SPI IP in PL
 //
 
-#ifndef MAX7301_H_
-#define MAX7301_H_
+#ifndef CN0585_GPIO_H_
+#define CN0585_GPIO_H_
 
 #include "xparameters.h"
 #include "xspi.h"
@@ -29,7 +29,7 @@
 // ##########  extern globals  ################
 
 // ##########  protos  ########################
-int InitMAX7301(void);
+int CN0585_Init_GPIO(void);
 
 
 

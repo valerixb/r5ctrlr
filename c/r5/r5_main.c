@@ -1855,44 +1855,44 @@ void Setup_Analog_Card(void)
   int status;
 
   // setup analog card (ADI CN0585)
-  status = InitMAX7301();
+  status = CN0585_Init_GPIO();
   if(status!=XST_SUCCESS)
     {
-    LPRINTF("Error in MAX7301 initialization.\r\n");
+    LPRINTF("Error in CN0585/MAX7301 initialization.\r\n");
     return XST_FAILURE;
     }
   else
     {
-    LPRINTF("MAX7301 successfully initialized\r\n");
+    LPRINTF("CN0585/MAX7301 successfully initialized\r\n");
     }
 
-  status = InitAD3552();
+  status = CN0585_Init_DAC();
   if(status!=XST_SUCCESS)
     {
-    LPRINTF("Error in AD3552 initialization.\r\n");
+    LPRINTF("Error in CN0585/AD3552 initialization.\r\n");
     return XST_FAILURE;
     }
   else
     {
-    LPRINTF("AD3552 successfully initialized\r\n");
+    LPRINTF("CN0585/AD3552 successfully initialized\r\n");
     }
 
-  status = InitADAQ23876();
+  status = CN0585_Init_ADC();
   if(status!=XST_SUCCESS)
     {
-    LPRINTF("Error in ADAQ23876 initialization.\r\n");
+    LPRINTF("Error in CN0585/ADAQ23876 initialization.\r\n");
     return XST_FAILURE;
     }
   else
     {
-    LPRINTF("ADAQ23876 successfully initialized\r\n");
+    LPRINTF("CN0585/ADAQ23876 successfully initialized\r\n");
     }
 
   // set a known initial pattern on the DAC outputs for debug purposes
-  // status = WriteDacSamples(0,0x4000, 0xC000);
-  // status = UpdateDacOutput(0);
-  // status = WriteDacSamples(1,0xC000, 0x4000);
-  // status = UpdateDacOutput(1);
+  // status = CN0585_WriteDacSamples(0,0x4000, 0xC000);
+  // status = CN0585_UpdateDacOutput(0);
+  // status = CN0585_WriteDacSamples(1,0xC000, 0x4000);
+  // status = CN0585_UpdateDacOutput(1);
   }
 
 
@@ -1970,7 +1970,7 @@ int SetupSystem(void **platformp)
     LPRINTF("ADC sample shared memory successfully initialized\r\n");
     }
 
-  // setup analog card (ADI CN0585)
+  // setup analog card
   Setup_Analog_Card();
 
   return XST_SUCCESS;
@@ -2233,7 +2233,7 @@ int main()
 
       // read ADCs into raw (adcval[i]) and with fullscale = 1.0 (g_x[i])
       // taking into account offset and gain correction
-      ReadADCs(adcval);
+      CN0585_ReadADCs(adcval);
       for(i=0; i<4; i++)
         {
         // x_(n-1)
@@ -2468,11 +2468,11 @@ int main()
         dacval[i]=(u16)round(DACtemp[i]+AD3552_OFFS);
         }
       
-      status = WriteDacSamples(0,dacval[0], dacval[1]);
-      status = WriteDacSamples(1,dacval[2], dacval[3]);
+      status = CN0585_WriteDacSamples(0,dacval[0], dacval[1]);
+      status = CN0585_WriteDacSamples(1,dacval[2], dacval[3]);
       // DAC output will be updated by hardware /LDAC pulse on next cycle 
-      //status = UpdateDacOutput(0);
-      //status = UpdateDacOutput(1);
+      //status = CN0585_UpdateDacOutput(0);
+      //status = CN0585_UpdateDacOutput(1);
 
       // register time of end of control loop step
       #ifdef PROFILE

@@ -39,9 +39,9 @@
 #include <metal/version.h>
 #include "rsc_table.h"
 #include "sample_shmem.h"
-#include "max7301.h"
-#include "ad3552.h"
-#include "adaq23876.h"
+#include "cn0585_gpio.h"
+#include "cn0585_dac.h"
+#include "cn0585_adc.h"
 #include "doubledsplib.h"
 
 //---------- openamp stuff  ------------------------
