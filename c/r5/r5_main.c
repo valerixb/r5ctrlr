@@ -1715,7 +1715,7 @@ int SetupAXIGPIO(void)
   {
   int status;
 
-  gpioConfig=XGpio_LookupConfig(GPIO_DEVICE_ID);
+  gpioConfig=XGpio_LookupConfig(PL_GPIO_BADDR);
   if(NULL==gpioConfig) 
     return XST_FAILURE;
 
@@ -2492,6 +2492,9 @@ int main()
 
         //  // print IRQ number
         //  LPRINTF("Tot IRQs so far: %d \n\r",last_irq_cnt);
+
+        // print # of GPIO IRQs
+        LPRINTF("GPIO IRQs so far: %d \n\r",irq_cntr[GPIO_IRQ_CNTR]);
 
         // print ADC values
         if(true)

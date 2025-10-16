@@ -67,7 +67,9 @@
 // PL regbank has base address 0x8002_0000,  which is XPAR_REGBANK_0_BASEADDR in xparameters.h
 #define REGBANK               (volatile unsigned int *)(XPAR_REGBANK_0_BASEADDR)
 // AXI GPIO ID is 0, even if it's not defined in xparameters.h
-#define GPIO_DEVICE_ID        0
+//cicci#define GPIO_DEVICE_ID        0
+// PL_GPIO base address is 0x8001_0000, which is XPAR_AXI_GPIO_0_BASEADDR in xparameters.h
+#define PL_GPIO_BADDR XPAR_AXI_GPIO_0_BASEADDR
 // buttons are on GPIO channel 1, LEDs on channel 2; enable IRQ for channel 1
 #define GPIO_BUTTON_IRQ_MASK  XGPIO_IR_CH1_MASK
 // AXI timer ID is 0, even if it's not defined in xparameters.h
