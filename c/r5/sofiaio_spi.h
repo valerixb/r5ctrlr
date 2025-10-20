@@ -46,6 +46,18 @@
 
 #define SOFIAIO_SPI_RESET_WAIT          10000UL
 
+// DAC AD3552R defs
+#define NUM_DACS                        2
+
+// AD3552 DAC internal register address
+#define AD3552_INTERFACE_CONFIG_A      0x00
+#define AD3552_SCRATCHPAD              0x0A
+#define AD3552_STREAM_MODE             0x0E
+#define AD3552_TRANSFER_REGISTER       0x0F
+#define AD3552_CH0_CH1_OUTPUT_RANGE    0x19
+#define AD3552_SW_LDAC_24B             0x45
+
+
 
 // ##########  types  #######################
 
@@ -53,9 +65,12 @@
 
 // ##########  protos  ########################
 int SofiaIO_SPI_Init(void);
+int SofiaIO_SPI_ADC_Init(void);
+int SofiaIO_SPI_DAC_Init(void);
 int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr);
 int SofiaIO_SPI_ReadADCs(s16 *ptr);
-
+int SofiaIO_SPI_WriteDacRegister(u8 addr, u8 data);
+int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data);
 
 
 #endif

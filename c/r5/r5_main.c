@@ -77,8 +77,7 @@ int gTimerIRQoccurred;
 
 // ADC sampling and waveform generation
 double gFsampl;
-s16    adcval[4];
-u16    dacval[4];
+s16    adcval[4],dacval[4];
 double g_x[4], g_x_1[4],g_ywgen[4],g_ydac[4];
 // I need s32 for offset because I need to cover the case offs=-32768, 
 // used to convert the ADC range from [-32768,32767] to [0,65535]
@@ -1932,6 +1931,27 @@ void Analog_Card_Read_ADC(s16 *ptr)
 
 // -----------------------------------------------------------
 
+// write DAC raw value as signed 16-bit 2's complement integer
+
+void Analog_Card_Write_DAC(s16 *ptr)
+  {
+  // DAC AD3552 is offset binary;
+  // usual conversion from 2's complement is done inverting the MSB,
+  // but here I prefer to offset and round, which is clearer
+
+  #ifdef ANALOG_CARD_CN0585
+  (void)CN0585_WriteDacSamples(0,(u16)round(*ptr    +AD3552_OFFS), (u16)round(*(ptr+1)+AD3552_OFFS));
+  (void)CN0585_WriteDacSamples(1,(u16)round(*(ptr+2)+AD3552_OFFS), (u16)round(*(ptr+3)+AD3552_OFFS));
+  #endif
+
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_WriteDacSamples(0,(u16)round(*ptr    +AD3552_OFFS), (u16)round(*(ptr+1)+AD3552_OFFS));
+  (void)SofiaIO_SPI_WriteDacSamples(1,(u16)round(*(ptr+2)+AD3552_OFFS), (u16)round(*(ptr+3)+AD3552_OFFS));
+  #endif
+  }
+
+// -----------------------------------------------------------
+
 int SetupSystem(void **platformp)
   {
   int status;
@@ -2489,23 +2509,18 @@ int main()
 
       // write DACs from values with fullscale = 1 (g_ydac[i]) into raw (dacval[i])
 
-      // DAC AD3552 is offset binary;
-      // usual conversion from 2's complement is done inverting the MSB,
-      // but here I prefer to keep a fullscale of +/-1 (double) in the calculations,
-      // so I just scale and offset at the end, which is clearer
       for(i=0; i<4; i++)
         {
         // FIRST I add the offset, THEN I saturate
-        DACtemp[i]=g_ydac[i]*AD3552_AMPL+gDAC_offs_cnt[i];
-        if(DACtemp[i]>AD3552_MAX)
-          DACtemp[i]=AD3552_MAX;
-        else if(DACtemp[i]<-AD3552_MAX)
-          DACtemp[i]=-AD3552_MAX;
-        dacval[i]=(u16)round(DACtemp[i]+AD3552_OFFS);
+        DACtemp[i]=g_ydac[i]*ANALOG_FULLSCALE_CNT+gDAC_offs_cnt[i];
+        if(DACtemp[i]>(ANALOG_FULLSCALE_CNT-1))
+          DACtemp[i]=(ANALOG_FULLSCALE_CNT-1);
+        else if(DACtemp[i]<-ANALOG_FULLSCALE_CNT)
+          DACtemp[i]=-ANALOG_FULLSCALE_CNT;
+        dacval[i]=(u16)round(DACtemp[i]);
         }
       
-      status = CN0585_WriteDacSamples(0,dacval[0], dacval[1]);
-      status = CN0585_WriteDacSamples(1,dacval[2], dacval[3]);
+      Analog_Card_Write_DAC(dacval);
       // DAC output will be updated by hardware /LDAC pulse on next cycle 
       //status = CN0585_UpdateDacOutput(0);
       //status = CN0585_UpdateDacOutput(1);
