@@ -12,9 +12,15 @@
 
 #include "r5_main.h"
 
+// set verbosity; printout are slow, so use none in production real time controller
 //#define PROFILE
 //#define PRINTOUT
 //#define RPMSG_DEBUG
+
+// choose which analog card we have
+#define ANALOG_CARD_CN0585
+#define ANALOG_CARD_SOFIAIO_SPI
+
 
 // ##########  globals  #######################
 
@@ -1714,7 +1720,8 @@ int CleanupIRQs(void)
 int SetupAXIGPIO(void)
   {
   int status;
-
+  
+  // you can use the base address to lookup the config even if the documentation talks of ID
   gpioConfig=XGpio_LookupConfig(PL_GPIO_BADDR);
   if(NULL==gpioConfig) 
     return XST_FAILURE;
@@ -1852,9 +1859,12 @@ static struct remoteproc *SetupRpmsg(int proc_index, int rsc_index)
 
 void Setup_Analog_Card(void)
   {
-  int status;
+  int status=0;
 
-  // setup analog card (ADI CN0585)
+  // setup analog card
+
+  #ifdef ANALOG_CARD_CN0585
+  // ADI CN0585
   status = CN0585_Init_GPIO();
   if(status!=XST_SUCCESS)
     {
@@ -1893,6 +1903,30 @@ void Setup_Analog_Card(void)
   // status = CN0585_UpdateDacOutput(0);
   // status = CN0585_WriteDacSamples(1,0xC000, 0x4000);
   // status = CN0585_UpdateDacOutput(1);
+  #endif
+
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  // Sofia's IO card connected via SPI
+  status = SofiaIO_SPI_Init();
+  
+  #endif
+
+  }
+
+
+// -----------------------------------------------------------
+
+// read ADC raw value as signed 16-bit 2's complement integer
+
+void Analog_Card_Read_ADC(s16 *ptr)
+  {
+  #ifdef ANALOG_CARD_CN0585
+  CN0585_ReadADCs(ptr);
+  #endif
+
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_ReadADCs(ptr);
+  #endif
   }
 
 
@@ -2233,7 +2267,9 @@ int main()
 
       // read ADCs into raw (adcval[i]) and with fullscale = 1.0 (g_x[i])
       // taking into account offset and gain correction
-      CN0585_ReadADCs(adcval);
+
+      // first read ADC raw value as signed 16-bit 2's complement integer
+      Analog_Card_Read_ADC(adcval);
       for(i=0; i<4; i++)
         {
         // x_(n-1)
@@ -2241,7 +2277,7 @@ int main()
         // x_(n)
         // offset correction must be applied before converting to floating point, 
         // for best dynamic range exploitation
-        g_x[i]=(adcval[i]+gADC_offs_cnt[i])/ADAQ23876_FULLSCALE_CNT*(double)(gADC_gain[i]);
+        g_x[i]=(adcval[i]+gADC_offs_cnt[i])/ANALOG_FULLSCALE_CNT*(double)(gADC_gain[i]);
         }
 
 
@@ -2502,8 +2538,8 @@ int main()
           for(i=0; i<4; i++)
             // LPRINTF("ADC#%d = %3d.%03d ",
             //         i,
-            //         (int)(g_x[i]*ADAQ23876_FULLSCALE_VOLT),
-            //         DECIMALS(g_x[i]*ADAQ23876_FULLSCALE_VOLT,3)
+            //         (int)(g_x[i]*ANALOG_FULLSCALE_VOLT),
+            //         DECIMALS(g_x[i]*ANALOG_FULLSCALE_VOLT,3)
             //        );
             LPRINTF("ADC#%d = %6d ",i, adcval[i]);
           LPRINTF("\n\r");

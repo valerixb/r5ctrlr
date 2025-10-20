@@ -22,15 +22,43 @@ static XGpio Sofiaio_GpioInstance;
 
 // ##########  implementation  ################
 
+int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr)
+  {
+  int status=XST_SUCCESS;
+
+  // assert /CS
+  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // send 16 bits
+  status = XSpi_Transfer(&Sofiaio_SpiInstance, outptr, inptr, 2);
+
+  // deassert /CS
+  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+  
+  return status;
+  }
+
+
+// -----------------------------------------------------------
+
 int SofiaIO_SPI_Init(void)
   {
   int status;
   XSpi_Config  *SPIconfigPtr;
   XGpio_Config *GPIOconfigPtr;
+  u8           outbuf[2];
   
   // init SPI IP --------------------------------------------------------------
 
-  SPIconfigPtr = XSpi_LookupConfig(SOFIAIO_XSPI_BADDR);
+  SPIconfigPtr = XSpi_LookupConfig(SOFIAIO_SPI_XSPI_BADDR);
 
   if(SPIconfigPtr == NULL)
     {
@@ -83,7 +111,8 @@ int SofiaIO_SPI_Init(void)
 
   // init GPIO IP -------------------------------------------------------------
 
-  GPIOconfigPtr=XGpio_LookupConfig(XPAR_SOFIAIO_GPIO_BASEADDR);
+  // you can use the base address to lookup the config even if the documentation talks of ID
+  GPIOconfigPtr=XGpio_LookupConfig(SOFIAIO_SPI_GPIO_BADDR);
   if(NULL==GPIOconfigPtr) 
     return XST_FAILURE;
 
@@ -96,5 +125,110 @@ int SofiaIO_SPI_Init(void)
     return XST_FAILURE;
 
 
+  // hardware reset ---------------------------------------------
+
+  // apply reset (DAC reset is negated), default device address to 0
+  XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, SOFIAIO_SPI_GPIO_ADC_RESET);
+  usleep(SOFIAIO_SPI_RESET_WAIT);
+  // remove reset
+  XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, SOFIAIO_SPI_GPIO_DAC_RESETN);
+
+  // ADC init ---------------------------------------------
+  
+  // ADC is AD7606C-16; it uses 16-bit SPI transaction, but we have an 8-bit SPI in PL to be 
+  // compatible with DAC and DIG I/Os; /CS assertion is manual
+
+  // select ADC address on card (selected by the '138)
+  XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
+                      SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_ADC_ADDR);
+
+  // --- set register mode by reading any register
+ 
+  outbuf[0]= 0x40 | SOFIAIO_SPI_AD7606_HIGHBW_REG;    // could be any other register
+  outbuf[1]= 0xFF;                                    // dummy: ignored 
+  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+  
+  outbuf[0]= SOFIAIO_SPI_AD7606_HIGHBW_REG;           // could be any other register
+  outbuf[1]= 0xFF ;                                   // dummy: ignored 
+  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // now ADC is in register mode
+
+  // set high bandwidth mode (220 kHz internal filter)
+
+  outbuf[0]= SOFIAIO_SPI_AD7606_HIGHBW_REG;
+  outbuf[1]= 0xFF;
+  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // (optional) set single SPI mode
+
+  outbuf[0]= SOFIAIO_SPI_AD7606_SPIMODE_REG;
+  outbuf[1]= 0x00;
+  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // revert to ADC read mode transmitting 0 for 16 SPI SCLK cycles
+
+  outbuf[0]= 0x00;
+  outbuf[1]= 0x00;
+  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // now ADC is back in ADC read mode
+
+
+  // DAC init ---------------------------------------------
+  // TODO
+
+  // DIG OUT init ---------------------------------------------
+  // TODO
+
   return status;
+  }
+
+
+// -----------------------------------------------------------
+
+int SofiaIO_SPI_ReadADCs(s16 *sampleptr)
+  {
+  u8  outbuf[2];
+  int i, status=XST_SUCCESS;
+
+  // select ADC address on card
+  XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
+                      SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_ADC_ADDR);
+  
+  // AD7606C-16 has 8 channels, but here we use the first 4 only
+  
+  outbuf[0]=0;
+  outbuf[1]=0;
+  
+  for(i=0; i<4; i++)
+    {
+    status = SofiaIO_SPI_16bit_transaction(outbuf, sampleptr+i);
+    if(status != XST_SUCCESS)
+      {
+      return XST_FAILURE;
+      }
+    }
+  
+  return status;  
   }

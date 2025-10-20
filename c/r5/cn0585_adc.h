@@ -35,9 +35,6 @@
 #define ADC_TACQ        (10<<4)
 #define ADC_SCLK_DIV    (2)
 
-// ADAQ23876 scaling
-#define ADAQ23876_FULLSCALE_CNT     (32768.0)
-#define ADAQ23876_FULLSCALE_VOLT       (10.0)
 
 // ##########  types  #######################
 

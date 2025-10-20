@@ -66,8 +66,6 @@
 #define INTC_REGBANK_IRQ_ID   XPS_FPGA2_INT_ID
 // PL regbank has base address 0x8002_0000,  which is XPAR_REGBANK_0_BASEADDR in xparameters.h
 #define REGBANK               (volatile unsigned int *)(XPAR_REGBANK_0_BASEADDR)
-// AXI GPIO ID is 0, even if it's not defined in xparameters.h
-//cicci#define GPIO_DEVICE_ID        0
 // PL_GPIO base address is 0x8001_0000, which is XPAR_AXI_GPIO_0_BASEADDR in xparameters.h
 #define PL_GPIO_BADDR XPAR_AXI_GPIO_0_BASEADDR
 // buttons are on GPIO channel 1, LEDs on channel 2; enable IRQ for channel 1
@@ -90,6 +88,10 @@
 #define PROFTIME_MIN             2
 #define PROFTIME_MAX             3
 #define PROFTIME_N               4
+
+// analog stuff
+#define ANALOG_FULLSCALE_CNT     (32768.0)
+#define ANALOG_FULLSCALE_VOLT    (10.0)
 
 
 // ##########  types  #######################
@@ -116,6 +118,7 @@ int SetupAXItimer(void);
 int SetupIRQs(void);
 int CleanupIRQs(void);
 void Setup_Analog_Card(void);
+void Analog_Card_Read_ADC(s16 *ptr);
 int SetupSystem(void **platformp);
 int CleanupSystem(void *platform);
 void SetupExceptions(void);
