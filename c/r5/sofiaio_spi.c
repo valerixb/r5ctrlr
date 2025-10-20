@@ -265,6 +265,76 @@ int SofiaIO_SPI_DAC_Init(void)
 
 // -----------------------------------------------------------
 
+int SofiaIO_SPI_DigOUT(u16 val)
+  {
+  int status=XST_SUCCESS;
+
+  // select 16-bit DIG OUT address on card (selected by the '138)
+  XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
+                      SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DIGOUT16BIT_ADDR);
+  
+  // assert /CS
+  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // send 16 bits
+  status = XSpi_Transfer(&Sofiaio_SpiInstance, &val, NULL, 2);
+  // don't check status, as I want to end the SPI transaction releasing /CS
+
+  // deassert /CS
+  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  return status;
+  }
+
+
+// -----------------------------------------------------------
+
+int SofiaIO_SPI_DigIN(u16 *ptr)
+  {
+  u8  outbuf[4], inbuf[4];
+  int status=XST_SUCCESS;
+
+  // select 16-bit DIG IN address on card (selected by the '138)
+  XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
+                      SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DIGIN16BIT_ADDR);
+  
+  // assert /CS
+  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+  
+  // must transmit a byte = 0 first to sample digital inputs
+  outbuf[0]=0x00;
+  outbuf[1]=0xFF;
+  outbuf[2]=0xFF;
+  status = XSpi_Transfer(&Sofiaio_SpiInstance, outbuf, &inbuf, 3);
+  // don't check status, as I want to end the SPI transaction releasing /CS
+
+  *ptr = inbuf[2] + ((u16)inbuf[1])<<8;
+
+  // deassert /CS
+  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  return status;
+  }
+
+
+// -----------------------------------------------------------
+
 int SofiaIO_SPI_Init(void)
   {
   int status;

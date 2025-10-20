@@ -18,7 +18,7 @@
 //#define RPMSG_DEBUG
 
 // choose which analog card we have
-#define ANALOG_CARD_CN0585
+//#define ANALOG_CARD_CN0585
 #define ANALOG_CARD_SOFIAIO_SPI
 
 
@@ -1858,9 +1858,7 @@ static struct remoteproc *SetupRpmsg(int proc_index, int rsc_index)
 
 void Setup_Analog_Card(void)
   {
-  int status=0;
-
-  // setup analog card
+  int status=XST_SUCCESS;
 
   #ifdef ANALOG_CARD_CN0585
   // ADI CN0585
@@ -1910,6 +1908,16 @@ void Setup_Analog_Card(void)
   
   #endif
 
+  }
+
+
+// -----------------------------------------------------------
+
+void Setup_Digital_Card(void)
+  {
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_DigOUT((u16)0);
+  #endif
   }
 
 
@@ -2024,8 +2032,8 @@ int SetupSystem(void **platformp)
     LPRINTF("ADC sample shared memory successfully initialized\r\n");
     }
 
-  // setup analog card
   Setup_Analog_Card();
+  Setup_Digital_Card();
 
   return XST_SUCCESS;
   }

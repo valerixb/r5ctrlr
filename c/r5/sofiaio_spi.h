@@ -67,6 +67,8 @@
 int SofiaIO_SPI_Init(void);
 int SofiaIO_SPI_ADC_Init(void);
 int SofiaIO_SPI_DAC_Init(void);
+int SofiaIO_SPI_DigOUT(u16 val);
+int SofiaIO_SPI_DigIN(u16 *ptr);
 int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr);
 int SofiaIO_SPI_ReadADCs(s16 *ptr);
 int SofiaIO_SPI_WriteDacRegister(u8 addr, u8 data);
