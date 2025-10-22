@@ -95,7 +95,7 @@ CTRLLOOP_CH_CONFIG gCtrlLoopChanConfig[4];
 
 // table of execution times for profiling;
 // entries are <x>, <x^2>, min, max, N_entries
-double time_table[PROFILE_TIME_ENTRIES][5];
+double time_table[PROFILE_TIME_ENTRIES][10];
 
 
 // ##########  implementation  ################
@@ -2281,7 +2281,7 @@ int main()
       // reset timer IRQ flag
       gTimerIRQoccurred=0;
 
-      // register IRQ latency as row 0 of prifile time table
+      // register IRQ latency as row 0 of profile time table
       #ifdef PROFILE
       AddTimeToTable(0,gTimerIRQlatency);
       #endif
@@ -2292,12 +2292,17 @@ int main()
       AddTimeToTable(1,currtimer_us);
       #endif
 
-
-      // read ADCs into raw (adcval[i]) and with fullscale = 1.0 (g_x[i])
-      // taking into account offset and gain correction
-
-      // first read ADC raw value as signed 16-bit 2's complement integer
+      // first read ADC raw value as signed 16-bit 2's complement integer into adcval[i]
       Analog_Card_Read_ADC(adcval);
+
+      // register time of end of ADC readout
+      #ifdef PROFILE
+      currtimer_us=GetTimer_us();
+      AddTimeToTable(2,currtimer_us);
+      #endif
+
+      // now convert ADC values to fullscale = 1.0 (g_x[i])
+      // taking into account offset and gain correction
       for(i=0; i<4; i++)
         {
         // x_(n-1)
@@ -2460,7 +2465,7 @@ int main()
       // register time of end of sine wave calculation
       #ifdef PROFILE
       currtimer_us=GetTimer_us();
-      AddTimeToTable(2,currtimer_us);
+      AddTimeToTable(3,currtimer_us);
       #endif
 
 
@@ -2508,7 +2513,7 @@ int main()
       // register time of end of control loop calculation
       #ifdef PROFILE
       currtimer_us=GetTimer_us();
-      AddTimeToTable(3,currtimer_us);
+      AddTimeToTable(4,currtimer_us);
       #endif
 
 
@@ -2666,16 +2671,22 @@ int main()
           (int)(time_table[1][PROFTIME_MAX]), DECIMALS(time_table[1][PROFTIME_MAX],3) );
   
         sigma=time_table[2][PROFTIME_AVG2]-time_table[2][PROFTIME_AVG]*time_table[2][PROFTIME_AVG];
-        LPRINTF("End of Sine Wave Calc (us)    : avg= %d ; s= %d.%03d; max= %d\n\r", 
+        LPRINTF("End ADC readoutc (us)         : avg= %d ; s= %d.%03d; max= %d\n\r", 
           (int)(time_table[2][PROFTIME_AVG]), 
           (int)(sigma), DECIMALS(sigma, 3),
           (int)(time_table[2][PROFTIME_MAX]) );
 
         sigma=time_table[3][PROFTIME_AVG2]-time_table[3][PROFTIME_AVG]*time_table[3][PROFTIME_AVG];
-        LPRINTF("End of Control Loop (us)      : avg= %d ; s= %d.%03d; max= %d\n\r", 
+        LPRINTF("End of Sine Wave Calc (us)    : avg= %d ; s= %d.%03d; max= %d\n\r", 
           (int)(time_table[3][PROFTIME_AVG]), 
           (int)(sigma), DECIMALS(sigma, 3),
           (int)(time_table[3][PROFTIME_MAX]) );
+
+        sigma=time_table[4][PROFTIME_AVG2]-time_table[4][PROFTIME_AVG]*time_table[4][PROFTIME_AVG];
+        LPRINTF("End of Control Loop (us)      : avg= %d ; s= %d.%03d; max= %d\n\r", 
+          (int)(time_table[4][PROFTIME_AVG]), 
+          (int)(sigma), DECIMALS(sigma, 3),
+          (int)(time_table[4][PROFTIME_MAX]) );
 
         LPRINTF("Ctrl loop step end (us)       : avg= %d ; max= %d\n\r", 
           (int)(time_table[PROFILE_TIME_ENTRIES-1][PROFTIME_AVG]), 

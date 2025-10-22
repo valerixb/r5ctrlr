@@ -58,6 +58,13 @@ int SofiaIO_SPI_ADC_Init(void)
   // ADC is AD7606C-16; it uses 16-bit SPI transaction, but we have an 8-bit SPI in PL to be 
   // compatible with DAC and DIG I/Os; /CS assertion is manual
 
+  // CPOL=1, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
   // select ADC address on card (selected by the '138)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                       SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_ADC_ADDR);
@@ -155,7 +162,14 @@ int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data)
   u8  outbuf[4];
   int status=XST_SUCCESS;
 
-  // select ADC address on card (selected by the '138)
+  // CPOL=0, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  // select DAC address on card (selected by the '138)
   if(DACindex==0)
     XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                         SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DAC1_ADDR);
@@ -210,6 +224,13 @@ int SofiaIO_SPI_DAC_Init(void)
 
   // DAC is ADI AD3552R; each chip has 2 DAC channels; we have two chips on board
   
+  // CPOL=0, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
   for(DACindex=0; DACindex<NUM_DACS; DACindex++)
     {
     // select ADC address on card (selected by the '138)
@@ -269,6 +290,13 @@ int SofiaIO_SPI_DigOUT(u16 val)
   {
   int status=XST_SUCCESS;
 
+  // CPOL=0, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION );
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
   // select 16-bit DIG OUT address on card (selected by the '138)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                       SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DIGOUT16BIT_ADDR);
@@ -301,6 +329,13 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
   {
   u8  outbuf[4], inbuf[4];
   int status=XST_SUCCESS;
+
+  // CPOL=1, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
 
   // select 16-bit DIG IN address on card (selected by the '138)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
@@ -372,6 +407,8 @@ int SofiaIO_SPI_Init(void)
 
   // AXI SPI options: master, manual slave select; we set CPHA=0 and CPOL=0, 
   // but that will be changed when accessing the different devices on the board;
+  // the options for CPOL=0, CPHA=0 are:
+  // XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION
   // the options for CPOL=1, CPHA=0 are:
   // XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION
   status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION);
@@ -445,6 +482,13 @@ int SofiaIO_SPI_ReadADCs(s16 *sampleptr)
   {
   u8  outbuf[2];
   int i, status=XST_SUCCESS;
+
+  // CPOL=1, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
 
   // select ADC address on card (selected by the '138)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
