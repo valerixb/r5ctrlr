@@ -45,6 +45,9 @@ extern s32 gADC_offs_cnt[4], gDAC_offs_cnt[4];
 extern int gDAC_outputSelect[4];
 extern float gADC_gain[4];
 extern CTRLLOOP_CH_CONFIG gCtrlLoopChanConfig[4];
+// digital I/Os
+extern u16 gDigOut, gDigIn;
+
 
 
 

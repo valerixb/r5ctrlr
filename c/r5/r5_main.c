@@ -18,8 +18,8 @@
 //#define RPMSG_DEBUG
 
 // choose which analog card we have
-//#define ANALOG_CARD_CN0585
-#define ANALOG_CARD_SOFIAIO_SPI
+#define ANALOG_CARD_CN0585
+//#define ANALOG_CARD_SOFIAIO_SPI
 
 
 // ##########  globals  #######################
@@ -92,6 +92,8 @@ unsigned long gTotSweepSamples[4], gCurSweepSamples[4], curShmSampleNum;
 
 CTRLLOOP_CH_CONFIG gCtrlLoopChanConfig[4];
 
+// digital I/Os
+u16 gDigOut, gDigIn;
 
 // table of execution times for profiling;
 // entries are <x>, <x^2>, min, max, N_entries
@@ -1399,6 +1401,45 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
         }
       break;
 
+    // update DIGITAL OUTPUTS with the values requested by linux
+    case RPMSGCMD_WRITE_DIGOUT:
+      gDigOut=(u16)((((R5_RPMSG_TYPE*)data)->data[0])&0x0000FFFF);
+      break;
+
+    // read back DIGITAL OUTPUTS value to linux
+    case RPMSGCMD_READ_DIGOUT:
+      ((R5_RPMSG_TYPE*)data)->command = RPMSGCMD_READ_DIGOUT;
+      ((R5_RPMSG_TYPE*)data)->data[0] = (u32)(gDigOut);
+      numbytes= rpmsg_send(ept, data, rpmsglen);
+      if(numbytes<rpmsglen)
+        {
+        // answer transmission incomplete
+        LPRINTF("DIGOUT READBACK incomplete answer transmitted.\n\r");
+        #ifdef RPMSG_DEBUG
+          return RPMSG_ERR_BUFF_SIZE;
+        #else
+          return RPMSG_SUCCESS;
+        #endif
+        }
+      break;
+
+    // read back DIGITAL INPUTS value to linux
+    case RPMSGCMD_READ_DIGIN:
+      ((R5_RPMSG_TYPE*)data)->command = RPMSGCMD_READ_DIGIN;
+      ((R5_RPMSG_TYPE*)data)->data[0] = (u32)(gDigIn);
+      numbytes= rpmsg_send(ept, data, rpmsglen);
+      if(numbytes<rpmsglen)
+        {
+        // answer transmission incomplete
+        LPRINTF("DIGIN READBACK incomplete answer transmitted.\n\r");
+        #ifdef RPMSG_DEBUG
+          return RPMSG_ERR_BUFF_SIZE;
+        #else
+          return RPMSG_SUCCESS;
+        #endif
+        }
+      break;
+    
     }
 
   return RPMSG_SUCCESS;
@@ -1923,6 +1964,26 @@ void Setup_Digital_Card(void)
 
 // -----------------------------------------------------------
 
+void Analog_Card_DigIN(u16 *ptr)
+  {
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_DigIN(ptr);
+  #endif
+  }
+
+
+// -----------------------------------------------------------
+
+void Analog_Card_DigOUT(u16 val)
+  {
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_DigOUT(val);
+  #endif
+  }
+
+
+// -----------------------------------------------------------
+
 // read ADC raw value as signed 16-bit 2's complement integer
 
 void Analog_Card_Read_ADC(s16 *ptr)
@@ -2214,6 +2275,9 @@ void InitVars(void)
 
     }
 
+  // digital I/Os
+  gDigOut=0;
+  gDigIn=0;
 
   // init number of IRQ served
   last_irq_cnt=0;
@@ -2292,7 +2356,10 @@ int main()
       AddTimeToTable(1,currtimer_us);
       #endif
 
-      // first read ADC raw value as signed 16-bit 2's complement integer into adcval[i]
+      // read digital inputs
+      Analog_Card_DigIN(&gDigIn);
+
+      // read ADC raw value as signed 16-bit 2's complement integer into adcval[i]
       Analog_Card_Read_ADC(adcval);
 
       // register time of end of ADC readout
@@ -2537,6 +2604,9 @@ int main()
       // DAC output will be updated by hardware /LDAC pulse on next cycle 
       //status = CN0585_UpdateDacOutput(0);
       //status = CN0585_UpdateDacOutput(1);
+
+      // update digital out
+      Analog_Card_DigOUT(gDigOut);
 
       // register time of end of control loop step
       #ifdef PROFILE

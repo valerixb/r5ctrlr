@@ -119,6 +119,8 @@ int SetupIRQs(void);
 int CleanupIRQs(void);
 void Setup_Analog_Card(void);
 void Setup_Digital_Card(void);
+void Analog_Card_DigIN(u16 *ptr);
+void Analog_Card_DigOUT(u16 val);
 void Analog_Card_Read_ADC(s16 *ptr);
 void Analog_Card_Write_DAC(s16 *ptr);
 int SetupSystem(void **platformp);
