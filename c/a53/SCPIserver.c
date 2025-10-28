@@ -3628,6 +3628,12 @@ void printHelp(int filedes)
   sendback(filedes,"                                NOTE: when recording in SWEEP mode, remember that the DAC is updated\n");
   sendback(filedes,"                                at next sampling clock cycle, so the first sample in the shm must always\n");
   sendback(filedes,"                                be discarded; anyway, it's good to have, to check it's zero\n");
+  sendback(filedes,"DIGIN?                        : read digital inputs; the answer is a 16-bit hex unsigned integer,\n");
+  sendback(filedes,"                                printed with the 0x prefix\n");
+  sendback(filedes,"DIGOUT <val>                  : write digital outputs; <val> is a 16-bit hex unsigned integer;\n");
+  sendback(filedes,"                                use the 0x prefix for hex format\n");
+  sendback(filedes,"DIGOUT?                       : read back the value of digital outputs; the answer is a 16-bit hex \n");
+  sendback(filedes,"                                unsigned integer, printed with the 0x prefix\n");
 
   }
 
