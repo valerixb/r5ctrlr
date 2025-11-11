@@ -2290,7 +2290,7 @@ void InitVars(void)
 int main()
   {
   unsigned int thereg, theval;
-  int          status, i;
+  int          status, i, firsttime=1;
   double       currtimer_us, sigma;
   double       dphase, alpha, dfreq;
   double       cmd, loopvar[4];
@@ -2327,7 +2327,8 @@ int main()
 
   LPRINTF("Starting main loop\n\r");
 
-  shutdown_req = 0;  
+  shutdown_req = 0;
+  firsttime=1;
   // shutdown_req will be set set to 1 by RPMSG unbind callback
   while(!shutdown_req)
     {
@@ -2339,8 +2340,8 @@ int main()
 
     if(gTimerIRQoccurred!=0)
       {
-      // check for overrun (it should NOT happen)
-      if(gTimerIRQoccurred>1)
+      // check for overrun (it should NOT happen, except the first time we enter the loop)
+      if((gTimerIRQoccurred>1)&&(firsttime==0))
         LPRINTF("ERROR - timer IRQ overrun\n\r");
       // reset timer IRQ flag
       gTimerIRQoccurred=0;
@@ -2597,7 +2598,7 @@ int main()
           DACtemp[i]=(ANALOG_FULLSCALE_CNT-1);
         else if(DACtemp[i]<-ANALOG_FULLSCALE_CNT)
           DACtemp[i]=-ANALOG_FULLSCALE_CNT;
-        dacval[i]=(u16)round(DACtemp[i]);
+        dacval[i]=(s16)round(DACtemp[i]);
         }
       
       Analog_Card_Write_DAC(dacval);
@@ -2769,6 +2770,7 @@ int main()
         }
       #endif  // PROFILE
 
+      firsttime=0;
       }  // if timer occurred
 
     }  // if not shutdown
