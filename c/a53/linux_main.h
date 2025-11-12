@@ -34,6 +34,8 @@
 #define RPMSG_ANSWER_ERR       1
 #define RPMSG_ANSWER_TIMEOUT   2
 
+#define SCPI_SERVER_CONFIG_FILENAME  "/etc/scpi.conf"
+
 // ##########  extern globals  ################
 extern void *gplatform;
 extern s16 g_adcval[4], g_dacval[4];

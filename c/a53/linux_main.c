@@ -842,6 +842,9 @@ int main(int argc, char *argv[])
     return status;
     }
   
+  // load initial configuration from file
+  ReadSCPIconf(SCPI_SERVER_CONFIG_FILENAME, &endp, gMsgPtr);
+
   status = startSCPIserver(&sock, &active_fd_set);
   if(status!=SCPI_NO_ERR)
     {

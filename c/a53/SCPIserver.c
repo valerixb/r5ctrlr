@@ -3831,6 +3831,21 @@ int SCPI_read_from_client(int filedes, RPMSG_ENDP_TYPE *endp_ptr, R5_RPMSG_TYPE 
 
 //-------------------------------------------------------------------
 
+void ReadSCPIconf(const char *fname, RPMSG_ENDP_TYPE *endp_ptr, R5_RPMSG_TYPE *rpmsg_ptr)
+  {
+  int fd;
+
+  // I don't test errors; note that the config file is optional
+
+  fd=open(fname,O_RDONLY);
+  if(fd!=-1)
+    SCPI_read_from_client(fd, endp_ptr, rpmsg_ptr);
+  (void)close(fd);
+  }
+
+
+//-------------------------------------------------------------------
+
 int startSCPIserver(int *sock_ptr, fd_set *active_fd_set_ptr)
   {
   int opt = 1;
