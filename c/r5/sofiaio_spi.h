@@ -73,6 +73,7 @@ int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr);
 int SofiaIO_SPI_ReadADCs(s16 *ptr);
 int SofiaIO_SPI_WriteDacRegister(u8 addr, u8 data);
 int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data);
+int SendSPIbuffer(XSpi* instance_ptr, u8* txbuf_ptr, u8* rxbuf_ptr, int bytecount);
 
 
 #endif

@@ -18,8 +18,8 @@
 //#define RPMSG_DEBUG
 
 // choose which analog card we have
-#define ANALOG_CARD_CN0585
-//#define ANALOG_CARD_SOFIAIO_SPI
+//#define ANALOG_CARD_CN0585
+#define ANALOG_CARD_SOFIAIO_SPI
 
 
 // ##########  globals  #######################
@@ -1328,6 +1328,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
     case RPMSGCMD_RESET:
       InitVars();
       Setup_Analog_Card();
+      Setup_Digital_Card();
       SetSamplingFreq((u32)gFsampl);
       break;
 
@@ -1944,8 +1945,18 @@ void Setup_Analog_Card(void)
   #endif
 
   #ifdef ANALOG_CARD_SOFIAIO_SPI
+  
   // Sofia's IO card connected via SPI
   status = SofiaIO_SPI_Init();
+  if(status!=XST_SUCCESS)
+    {
+    LPRINTF("Error in SofiaIO-SPI initialization.\r\n");
+    return XST_FAILURE;
+    }
+  else
+    {
+    LPRINTF("SofiaIO-SPI successfully initialized\r\n");
+    }
   
   #endif
 

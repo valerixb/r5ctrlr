@@ -22,6 +22,27 @@ static XGpio Sofiaio_GpioInstance;
 
 // ##########  implementation  ################
 
+
+int SendSPIbuffer(XSpi* instance_ptr, u8* txbuf_ptr, u8* rxbuf_ptr, int bytecount)
+  {
+  int status, wordnum;
+  // without a FIFO in the SPI IP we cannot send the whole buffer in one call: 
+  // we must transmit single words, so I make a loop
+  //
+  for(wordnum=0; wordnum<bytecount; wordnum++)
+    {
+    if(NULL!=rxbuf_ptr)
+      status = XSpi_Transfer(instance_ptr, txbuf_ptr+wordnum, rxbuf_ptr+wordnum, 1);
+    else
+      status = XSpi_Transfer(instance_ptr, txbuf_ptr+wordnum, NULL, 1);
+    if(status != XST_SUCCESS)
+      break;
+    }
+  return status;
+  }
+
+// -----------------------------------------------------------
+
 int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr)
   {
   int status=XST_SUCCESS;
@@ -34,7 +55,8 @@ int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr)
     }
 
   // send 16 bits
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, outptr, inptr, 2);
+  status = SendSPIbuffer(&Sofiaio_SpiInstance, outptr, inptr, 2);
+
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // deassert /CS
@@ -141,7 +163,8 @@ int SofiaIO_SPI_WriteDacRegister(u8 addr, u8 data)
     }
 
   // send 16 bits
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, outbuf, NULL, 2);
+  status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, NULL, 2);
+  
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // deassert /CS
@@ -193,14 +216,14 @@ int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data)
   outbuf[0]=ch1data & 0x00FF;
   outbuf[1]=(ch1data>>8) & 0x00FF;
   outbuf[2]=0x00;
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, outbuf, NULL, 3);
+  status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, NULL, 3);
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // send CH0 data
   outbuf[0]=ch0data & 0x00FF;
   outbuf[1]=(ch0data>>8) & 0x00FF;
   outbuf[2]=0x00;
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, outbuf, NULL, 3);
+  status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, NULL, 3);
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // deassert /CS
@@ -309,7 +332,7 @@ int SofiaIO_SPI_DigOUT(u16 val)
     }
 
   // send 16 bits
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, &val, NULL, 2);
+  status = SendSPIbuffer(&Sofiaio_SpiInstance, &val, NULL, 2);
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // deassert /CS
@@ -327,7 +350,7 @@ int SofiaIO_SPI_DigOUT(u16 val)
 
 int SofiaIO_SPI_DigIN(u16 *ptr)
   {
-  u8  outbuf[4], inbuf[4];
+  static u8  outbuf[4], inbuf[4];
   int status=XST_SUCCESS;
 
   // CPOL=1, CPHA=0
@@ -352,7 +375,8 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
   outbuf[0]=0x00;
   outbuf[1]=0xFF;
   outbuf[2]=0xFF;
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, outbuf, &inbuf, 3);
+  status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, inbuf, 3);
+
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   *ptr = inbuf[2] + ((u16)inbuf[1])<<8;
