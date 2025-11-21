@@ -23,6 +23,70 @@ static XGpio Sofiaio_GpioInstance;
 // ##########  implementation  ################
 
 
+int AssertCS(XSpi* instance_ptr)
+  {
+  int status=XST_SUCCESS;
+  // this just changes a mask inside Xilinx baremetal driver
+  status = XSpi_SetSlaveSelect(instance_ptr, 1 );
+  // this actually toggles the /CS line
+  XSpi_SetSlaveSelectReg(instance_ptr, 0xFFFFFFFE);
+  return status;
+  }
+
+
+// -----------------------------------------------------------
+
+int DeassertCS(XSpi* instance_ptr)
+  {
+  int status=XST_SUCCESS;
+  // this just changes a mask inside Xilinx baremetal driver
+  status = XSpi_SetSlaveSelect(instance_ptr, 0 );
+  // this actually toggles the /CS line
+  XSpi_SetSlaveSelectReg(instance_ptr, 0xFFFFFFFF);
+  return status;
+  }
+
+
+// -----------------------------------------------------------
+
+int SendSPIbyte(XSpi* instance_ptr, u8* tx_ptr, u8* rx_ptr)
+  {
+  u32 data, statusr;
+
+  // XSpi_Transfer() does not work with manual CS assertion, so I write my own function
+
+  data=(u32)*tx_ptr;
+  // inhibit master transaction
+  XSpi_SetControlReg(instance_ptr, 0x00000184 );
+  // write data to be transmitted
+  XSpi_WriteReg(instance_ptr->BaseAddr, XSP_DTR_OFFSET, data);
+  // start transaction removing the inhibit bit and enabling the transfer;
+  XSpi_SetControlReg(instance_ptr, 0x00000086 );
+
+  //usleep(1);
+  // wait for complation checking the interrupt flag
+  do
+    {
+    statusr = XSpi_IntrGetStatus(instance_ptr);
+    } while((statusr & XSP_INTR_TX_EMPTY_MASK) == 0);
+  XSpi_IntrClear(instance_ptr,XSP_INTR_TX_EMPTY_MASK);
+
+  // read byte
+  if(NULL!=rx_ptr)
+    {
+    data = XSpi_ReadReg(instance_ptr->BaseAddr, XSP_DRR_OFFSET);
+    *rx_ptr=(u8)(data&0x000000FF);
+    }
+
+  // inhibit master transaction
+  XSpi_SetControlReg(instance_ptr, 0x00000184 );
+
+  return XST_SUCCESS;
+  }
+
+
+// -----------------------------------------------------------
+
 int SendSPIbuffer(XSpi* instance_ptr, u8* txbuf_ptr, u8* rxbuf_ptr, int bytecount)
   {
   int status, wordnum;
@@ -32,35 +96,34 @@ int SendSPIbuffer(XSpi* instance_ptr, u8* txbuf_ptr, u8* rxbuf_ptr, int bytecoun
   for(wordnum=0; wordnum<bytecount; wordnum++)
     {
     if(NULL!=rxbuf_ptr)
-      status = XSpi_Transfer(instance_ptr, txbuf_ptr+wordnum, rxbuf_ptr+wordnum, 1);
+      status = SendSPIbyte(instance_ptr, txbuf_ptr+wordnum, rxbuf_ptr+wordnum);
     else
-      status = XSpi_Transfer(instance_ptr, txbuf_ptr+wordnum, NULL, 1);
+      status = SendSPIbyte(instance_ptr, txbuf_ptr+wordnum, NULL);
     if(status != XST_SUCCESS)
       break;
     }
   return status;
   }
 
+
 // -----------------------------------------------------------
 
-int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr)
+int SofiaIO_SPI_16bit_transaction(XSpi* instance_ptr, s16 *outptr, s16 *inptr)
   {
   int status=XST_SUCCESS;
 
-  // assert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
+  status = AssertCS(instance_ptr);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
     }
 
   // send 16 bits
-  status = SendSPIbuffer(&Sofiaio_SpiInstance, outptr, inptr, 2);
+  status = SendSPIbuffer(instance_ptr, outptr, inptr, 2);
 
   // don't check status, as I want to end the SPI transaction releasing /CS
 
-  // deassert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  status = DeassertCS(instance_ptr);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -81,7 +144,7 @@ int SofiaIO_SPI_ADC_Init(void)
   // compatible with DAC and DIG I/Os; /CS assertion is manual
 
   // CPOL=1, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION);
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -95,7 +158,7 @@ int SofiaIO_SPI_ADC_Init(void)
  
   outbuf[0]= 0x40 | SOFIAIO_SPI_AD7606_HIGHBW_REG;    // could be any other register
   outbuf[1]= 0xFF;                                    // dummy: ignored 
-  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -103,7 +166,7 @@ int SofiaIO_SPI_ADC_Init(void)
   
   outbuf[0]= SOFIAIO_SPI_AD7606_HIGHBW_REG;           // could be any other register
   outbuf[1]= 0xFF ;                                   // dummy: ignored 
-  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -115,7 +178,7 @@ int SofiaIO_SPI_ADC_Init(void)
 
   outbuf[0]= SOFIAIO_SPI_AD7606_HIGHBW_REG;
   outbuf[1]= 0xFF;
-  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -125,7 +188,7 @@ int SofiaIO_SPI_ADC_Init(void)
 
   outbuf[0]= SOFIAIO_SPI_AD7606_SPIMODE_REG;
   outbuf[1]= 0x00;
-  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -135,7 +198,7 @@ int SofiaIO_SPI_ADC_Init(void)
 
   outbuf[0]= 0x00;
   outbuf[1]= 0x00;
-  status = SofiaIO_SPI_16bit_transaction(outbuf, NULL);
+  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -155,24 +218,7 @@ int SofiaIO_SPI_WriteDacRegister(u8 addr, u8 data)
   outbuf[0]=addr;
   outbuf[1]=data;
 
-  // assert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
-  if(status != XST_SUCCESS)
-    {
-    return XST_FAILURE;
-    }
-
-  // send 16 bits
-  status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, NULL, 2);
-  
-  // don't check status, as I want to end the SPI transaction releasing /CS
-
-  // deassert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
-  if(status != XST_SUCCESS)
-    {
-    return XST_FAILURE;
-    }
+  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
   
   return status;
   }
@@ -186,7 +232,9 @@ int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data)
   int status=XST_SUCCESS;
 
   // CPOL=0, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION );
+  //status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION );
+  // I use the low-level API to be sure
+  XSpi_SetControlReg(&Sofiaio_SpiInstance, 0x00000084 );
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -200,8 +248,7 @@ int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data)
     XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                       SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DAC2_ADDR);
 
-  // assert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
+  status = AssertCS(&Sofiaio_SpiInstance);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -209,25 +256,24 @@ int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data)
 
   // send address
   outbuf[0]=0x4B;
-  status = XSpi_Transfer(&Sofiaio_SpiInstance, outbuf, NULL, 1);
+  status = SendSPIbyte(&Sofiaio_SpiInstance, outbuf, NULL);
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // send CH1 data
-  outbuf[0]=ch1data & 0x00FF;
-  outbuf[1]=(ch1data>>8) & 0x00FF;
+  outbuf[0]=(ch1data>>8) & 0x00FF;
+  outbuf[1]=ch1data & 0x00FF;
   outbuf[2]=0x00;
   status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, NULL, 3);
   // don't check status, as I want to end the SPI transaction releasing /CS
 
   // send CH0 data
-  outbuf[0]=ch0data & 0x00FF;
-  outbuf[1]=(ch0data>>8) & 0x00FF;
+  outbuf[0]=(ch0data>>8) & 0x00FF;
+  outbuf[1]=ch0data & 0x00FF;
   outbuf[2]=0x00;
   status = SendSPIbuffer(&Sofiaio_SpiInstance, outbuf, NULL, 3);
   // don't check status, as I want to end the SPI transaction releasing /CS
 
-  // deassert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  status = DeassertCS(&Sofiaio_SpiInstance);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -248,7 +294,7 @@ int SofiaIO_SPI_DAC_Init(void)
   // DAC is ADI AD3552R; each chip has 2 DAC channels; we have two chips on board
   
   // CPOL=0, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION );
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION );
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -314,7 +360,7 @@ int SofiaIO_SPI_DigOUT(u16 val)
   int status=XST_SUCCESS;
 
   // CPOL=0, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION );
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION );
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -324,23 +370,7 @@ int SofiaIO_SPI_DigOUT(u16 val)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                       SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DIGOUT16BIT_ADDR);
   
-  // assert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
-  if(status != XST_SUCCESS)
-    {
-    return XST_FAILURE;
-    }
-
-  // send 16 bits
-  status = SendSPIbuffer(&Sofiaio_SpiInstance, &val, NULL, 2);
-  // don't check status, as I want to end the SPI transaction releasing /CS
-
-  // deassert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
-  if(status != XST_SUCCESS)
-    {
-    return XST_FAILURE;
-    }
+  SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, &val, NULL);
 
   return status;
   }
@@ -354,7 +384,7 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
   int status=XST_SUCCESS;
 
   // CPOL=1, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION);
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -364,8 +394,7 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                       SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DIGIN16BIT_ADDR);
   
-  // assert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 1 );
+  status = AssertCS(&Sofiaio_SpiInstance);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -381,8 +410,7 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
 
   *ptr = inbuf[2] + ((u16)inbuf[1])<<8;
 
-  // deassert /CS
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  status = DeassertCS(&Sofiaio_SpiInstance);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -432,18 +460,17 @@ int SofiaIO_SPI_Init(void)
   // AXI SPI options: master, manual slave select; we set CPHA=0 and CPOL=0, 
   // but that will be changed when accessing the different devices on the board;
   // the options for CPOL=0, CPHA=0 are:
-  // XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION
+  // XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION
   // the options for CPOL=1, CPHA=0 are:
-  // XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION);
+  // XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
     }
 
   // we operate manual slave select mode, so deselect the slave 
-  // (use 1 instead of 0 to select the only slave we have; it's bit-coded)
-  status = XSpi_SetSlaveSelect(&Sofiaio_SpiInstance, 0 );
+  status = DeassertCS(&Sofiaio_SpiInstance);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -453,7 +480,7 @@ int SofiaIO_SPI_Init(void)
   // note that IRQ disable API must be called AFTER start API
   XSpi_Start(&Sofiaio_SpiInstance);
   XSpi_IntrGlobalDisable(&Sofiaio_SpiInstance);
-
+  //cicci XSpi_IntrDisable(&Sofiaio_SpiInstance, XSP_INTR_ALL);
 
   // init GPIO IP -------------------------------------------------------------
 
@@ -508,7 +535,7 @@ int SofiaIO_SPI_ReadADCs(s16 *sampleptr)
   int i, status=XST_SUCCESS;
 
   // CPOL=1, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION || XSP_MANUAL_SSELECT_OPTION || XSP_CLK_ACTIVE_LOW_OPTION);
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -525,7 +552,7 @@ int SofiaIO_SPI_ReadADCs(s16 *sampleptr)
   
   for(i=0; i<4; i++)
     {
-    status = SofiaIO_SPI_16bit_transaction(outbuf, sampleptr+i);
+    status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, sampleptr+i);
     if(status != XST_SUCCESS)
       {
       return XST_FAILURE;

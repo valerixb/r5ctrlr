@@ -69,11 +69,14 @@ int SofiaIO_SPI_ADC_Init(void);
 int SofiaIO_SPI_DAC_Init(void);
 int SofiaIO_SPI_DigOUT(u16 val);
 int SofiaIO_SPI_DigIN(u16 *ptr);
-int SofiaIO_SPI_16bit_transaction(s16 *outptr, s16 *inptr);
 int SofiaIO_SPI_ReadADCs(s16 *ptr);
 int SofiaIO_SPI_WriteDacRegister(u8 addr, u8 data);
 int SofiaIO_SPI_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data);
+int AssertCS(XSpi* instance_ptr);
+int DeassertCS(XSpi* instance_ptr);
+int SendSPIbyte(XSpi* instance_ptr, u8* tx_ptr, u8* rx_ptr);
 int SendSPIbuffer(XSpi* instance_ptr, u8* txbuf_ptr, u8* rxbuf_ptr, int bytecount);
+int SofiaIO_SPI_16bit_transaction(XSpi* instance_ptr, s16 *outptr, s16 *inptr);
 
 
 #endif
