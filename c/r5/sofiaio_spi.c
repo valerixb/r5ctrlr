@@ -51,20 +51,22 @@ int DeassertCS(XSpi* instance_ptr)
 
 int SendSPIbyte(XSpi* instance_ptr, u8* tx_ptr, u8* rx_ptr)
   {
-  u32 data, statusr;
+  u32 data, statusr, saveCtrlReg;
 
   // XSpi_Transfer() does not work with manual CS assertion, so I write my own function
 
   data=(u32)*tx_ptr;
+  saveCtrlReg=XSpi_GetControlReg(instance_ptr);
   // inhibit master transaction
-  XSpi_SetControlReg(instance_ptr, 0x00000184 );
+  XSpi_SetControlReg(instance_ptr, saveCtrlReg | 0x00000100 );
+
   // write data to be transmitted
   XSpi_WriteReg(instance_ptr->BaseAddr, XSP_DTR_OFFSET, data);
-  // start transaction removing the inhibit bit and enabling the transfer;
-  XSpi_SetControlReg(instance_ptr, 0x00000086 );
 
-  //usleep(1);
-  // wait for complation checking the interrupt flag
+  // start transaction removing the inhibit bit and enabling the transfer;
+  XSpi_SetControlReg(instance_ptr, saveCtrlReg & 0xFFFFFEFF | 0x00000002 );
+
+  // wait for completion checking the interrupt flag
   do
     {
     statusr = XSpi_IntrGetStatus(instance_ptr);
@@ -79,7 +81,7 @@ int SendSPIbyte(XSpi* instance_ptr, u8* tx_ptr, u8* rx_ptr)
     }
 
   // inhibit master transaction
-  XSpi_SetControlReg(instance_ptr, 0x00000184 );
+  XSpi_SetControlReg(instance_ptr, saveCtrlReg | 0x00000100 );
 
   return XST_SUCCESS;
   }
@@ -96,7 +98,7 @@ int SendSPIbuffer(XSpi* instance_ptr, u8* txbuf_ptr, u8* rxbuf_ptr, int bytecoun
   for(wordnum=0; wordnum<bytecount; wordnum++)
     {
     if(NULL!=rxbuf_ptr)
-      status = SendSPIbyte(instance_ptr, txbuf_ptr+wordnum, rxbuf_ptr+wordnum);
+      status = SendSPIbyte(instance_ptr, txbuf_ptr+wordnum, rxbuf_ptr+bytecount-1-wordnum);
     else
       status = SendSPIbyte(instance_ptr, txbuf_ptr+wordnum, NULL);
     if(status != XST_SUCCESS)
@@ -164,15 +166,8 @@ int SofiaIO_SPI_ADC_Init(void)
     return XST_FAILURE;
     }
   
-  outbuf[0]= SOFIAIO_SPI_AD7606_HIGHBW_REG;           // could be any other register
-  outbuf[1]= 0xFF ;                                   // dummy: ignored 
-  status = SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, outbuf, NULL);
-  if(status != XST_SUCCESS)
-    {
-    return XST_FAILURE;
-    }
-
   // now ADC is in register mode
+
 
   // set high bandwidth mode (220 kHz internal filter)
 
@@ -463,6 +458,8 @@ int SofiaIO_SPI_Init(void)
   // XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION
   // the options for CPOL=1, CPHA=0 are:
   // XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION
+  // the options for CPOL=1, CPHA=1 are:
+  // XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_PHASE_1_OPTION | XSP_CLK_ACTIVE_LOW_OPTION
   status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION);
   if(status != XST_SUCCESS)
     {
@@ -480,7 +477,6 @@ int SofiaIO_SPI_Init(void)
   // note that IRQ disable API must be called AFTER start API
   XSpi_Start(&Sofiaio_SpiInstance);
   XSpi_IntrGlobalDisable(&Sofiaio_SpiInstance);
-  //cicci XSpi_IntrDisable(&Sofiaio_SpiInstance, XSP_INTR_ALL);
 
   // init GPIO IP -------------------------------------------------------------
 
@@ -531,11 +527,11 @@ int SofiaIO_SPI_Init(void)
 
 int SofiaIO_SPI_ReadADCs(s16 *sampleptr)
   {
-  u8  outbuf[2];
+  u8  outbuf[2], inbuf[2];
   int i, status=XST_SUCCESS;
 
-  // CPOL=1, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION);
+  // CPOL=1, CPHA=1
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_PHASE_1_OPTION | XSP_CLK_ACTIVE_LOW_OPTION);
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -549,6 +545,8 @@ int SofiaIO_SPI_ReadADCs(s16 *sampleptr)
   
   outbuf[0]=0;
   outbuf[1]=0;
+  inbuf[0]=0;
+  inbuf[1]=0;
   
   for(i=0; i<4; i++)
     {

@@ -2369,7 +2369,7 @@ int main()
       #endif
 
       // read digital inputs
-      Analog_Card_DigIN(&gDigIn);
+      //cicci Analog_Card_DigIN(&gDigIn);
 
       // read ADC raw value as signed 16-bit 2's complement integer into adcval[i]
       Analog_Card_Read_ADC(adcval);
@@ -2618,7 +2618,7 @@ int main()
       //status = CN0585_UpdateDacOutput(1);
 
       // update digital out
-      Analog_Card_DigOUT(gDigOut);
+      //cicci Analog_Card_DigOUT(gDigOut);
 
       // register time of end of control loop step
       #ifdef PROFILE
