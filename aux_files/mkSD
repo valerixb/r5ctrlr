@@ -35,6 +35,9 @@ sudo chmod a+rx /media/valbas/root/etc/sudoers.d/99-petalinux
 sudo rm /media/valbas/root/etc/init.d/r5ctrlr-scpi-serv-init
 sudo cp ./A53app.elf /media/valbas/root/home/maxiv/.
 sudo chmod a+rwx /media/valbas/root/home/maxiv/A53app.elf
+# SCPI server config file (if any)
+sudo cp ./scpi.conf /media/valbas/root/etc/.
+sudo chmod a+rwx /media/valbas/root/etc/scpi.conf
 sync
 sync
 sync

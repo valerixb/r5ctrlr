@@ -11,8 +11,8 @@
 // It's interfaced via our custom IP in PL
 //
 
-#ifndef ADAQ23876_H_
-#define ADAQ23876_H_
+#ifndef CN0585_ADC_H_
+#define CN0585_ADC_H_
 
 #include "xparameters.h"
 #include "xil_printf.h"
@@ -35,17 +35,14 @@
 #define ADC_TACQ        (10<<4)
 #define ADC_SCLK_DIV    (2)
 
-// ADAQ23876 scaling
-#define ADAQ23876_FULLSCALE_CNT     (32768.0)
-#define ADAQ23876_FULLSCALE_VOLT       (10.0)
 
 // ##########  types  #######################
 
 // ##########  extern globals  ################
 
 // ##########  protos  ########################
-int InitADAQ23876(void);
+int CN0585_Init_ADC(void);
 // s16 means signed int 16
-void ReadADCs(s16 *ptr);
+void CN0585_ReadADCs(s16 *ptr);
 
 #endif

@@ -3315,6 +3315,122 @@ void parse_TRIGSETUP(char *ans, size_t maxlen, int rw, RPMSG_ENDP_TYPE *endp_ptr
 
 //-------------------------------------------------------------------
 
+void parse_DIGOUT(char *ans, size_t maxlen, int rw, RPMSG_ENDP_TYPE *endp_ptr, R5_RPMSG_TYPE *rpmsg_ptr)
+  {
+  char *p;
+  unsigned long int n;
+  int numbytes, rpmsglen, status;
+
+  
+  if(rw==SCPI_READ)
+    {
+    // READ
+
+    // remove stale rpmsgs from queue
+    FlushRpmsg();
+
+    rpmsglen=sizeof(R5_RPMSG_TYPE);
+    rpmsg_ptr->command = RPMSGCMD_READ_DIGOUT;
+    numbytes= rpmsg_send(endp_ptr, rpmsg_ptr, rpmsglen);
+    if(numbytes<rpmsglen)
+      {
+      snprintf(ans, maxlen, "%s: DIGOUT READBACK rpmsg_send() failed\n", SCPI_ERRS);
+      return;
+      }
+    // now wait for answer
+    status=WaitForRpmsg();
+    switch(status)
+      {
+      case RPMSG_ANSWER_VALID:
+        snprintf(ans, maxlen, "%s: 0x%04X is the DIG OUT value\n", SCPI_OKS, gDigOut);
+        break;
+      case RPMSG_ANSWER_TIMEOUT:
+        snprintf(ans, maxlen, "%s: DIGOUT READBACK timed out\n", SCPI_ERRS);
+        break;
+      case RPMSG_ANSWER_ERR:
+        snprintf(ans, maxlen, "%s: DIGOUT READBACK error\n", SCPI_ERRS);
+        break;
+      }
+    }
+  else
+    {
+    // WRITE
+
+    // parse the digout value as 16-bit unsigned int; use 0x... for hex numbers
+    p=strtok(NULL," ");
+    if(p==NULL)
+      {
+      snprintf(ans, maxlen, "%s: missing DIGOUT value\n", SCPI_ERRS);
+      return;
+      }
+    errno=0;
+    // use 0 as base to enable decimal default, 0x prefix means hex
+    n=strtoul(p, NULL, 0);
+    if(errno!=0 && n==0)
+      {
+      snprintf(ans, maxlen, "%s: invalid DIGOUT value\n", SCPI_ERRS);
+      return;
+      }
+    gDigOut=(u16)n;
+
+    // now send the new values to R5
+    rpmsglen=sizeof(R5_RPMSG_TYPE);
+    rpmsg_ptr->command = RPMSGCMD_WRITE_DIGOUT;
+    rpmsg_ptr->data[0]=(u32)(gDigOut);
+    numbytes= rpmsg_send(endp_ptr, rpmsg_ptr, rpmsglen);
+    if(numbytes<rpmsglen)
+      snprintf(ans, maxlen, "%s: DIGOUT WRITE rpmsg_send() failed\n", SCPI_ERRS);
+    else
+      snprintf(ans, maxlen, "%s: DIG OUT updated to 0x%04X\n", SCPI_OKS, gDigOut);
+    }
+  }
+
+
+//-------------------------------------------------------------------
+
+void parse_DIGIN(char *ans, size_t maxlen, int rw, RPMSG_ENDP_TYPE *endp_ptr, R5_RPMSG_TYPE *rpmsg_ptr)
+  {
+  int numbytes, rpmsglen, status;
+  
+  if(rw==SCPI_READ)
+    {
+    // READ
+
+    // remove stale rpmsgs from queue
+    FlushRpmsg();
+
+    rpmsglen=sizeof(R5_RPMSG_TYPE);
+    rpmsg_ptr->command = RPMSGCMD_READ_DIGIN;
+    numbytes= rpmsg_send(endp_ptr, rpmsg_ptr, rpmsglen);
+    if(numbytes<rpmsglen)
+      {
+      snprintf(ans, maxlen, "%s: DIGIN READBACK rpmsg_send() failed\n", SCPI_ERRS);
+      return;
+      }
+    // now wait for answer
+    status=WaitForRpmsg();
+    switch(status)
+      {
+      case RPMSG_ANSWER_VALID:
+        snprintf(ans, maxlen, "%s: 0x%04X is the DIG IN value\n", SCPI_OKS, gDigIn);
+        break;
+      case RPMSG_ANSWER_TIMEOUT:
+        snprintf(ans, maxlen, "%s: DIGIN READBACK timed out\n", SCPI_ERRS);
+        break;
+      case RPMSG_ANSWER_ERR:
+        snprintf(ans, maxlen, "%s: DIGIN READBACK error\n", SCPI_ERRS);
+        break;
+      }
+    }
+  else
+    {
+    snprintf(ans, maxlen, "%s: write operation not supported\n", SCPI_ERRS);
+    }
+  }
+
+
+//-------------------------------------------------------------------
+
 void printSamples(int filedes)
   {
   char  s[256];
@@ -3512,6 +3628,12 @@ void printHelp(int filedes)
   sendback(filedes,"                                NOTE: when recording in SWEEP mode, remember that the DAC is updated\n");
   sendback(filedes,"                                at next sampling clock cycle, so the first sample in the shm must always\n");
   sendback(filedes,"                                be discarded; anyway, it's good to have, to check it's zero\n");
+  sendback(filedes,"DIGIN?                        : read digital inputs; the answer is a 16-bit hex unsigned integer,\n");
+  sendback(filedes,"                                printed with the 0x prefix\n");
+  sendback(filedes,"DIGOUT <val>                  : write digital outputs; <val> is a 16-bit hex unsigned integer;\n");
+  sendback(filedes,"                                use the 0x prefix for hex format\n");
+  sendback(filedes,"DIGOUT?                       : read back the value of digital outputs; the answer is a 16-bit hex \n");
+  sendback(filedes,"                                unsigned integer, printed with the 0x prefix\n");
 
   }
 
@@ -3597,6 +3719,10 @@ void parse(char *buf, char *ans, size_t maxlen, int filedes, RPMSG_ENDP_TYPE *en
     parse_TRIG(ans, maxlen, rw, endp_ptr, rpmsg_ptr);
   else if( (strcmp(p,"RECORD:TRIG:SETUP")==0) || (strcmp(p,"RECORD:TRIGGER:SETUP")==0) )
     parse_TRIGSETUP(ans, maxlen, rw, endp_ptr, rpmsg_ptr);
+  else if(strcmp(p,"DIGIN")==0)
+    parse_DIGIN(ans, maxlen, rw, endp_ptr, rpmsg_ptr);
+  else if(strcmp(p,"DIGOUT")==0)
+    parse_DIGOUT(ans, maxlen, rw, endp_ptr, rpmsg_ptr);
   else if(strcmp(p,"RECORD:SAMPLES")==0)
     {
     printSamples(filedes);
@@ -3700,6 +3826,22 @@ int SCPI_read_from_client(int filedes, RPMSG_ENDP_TYPE *endp_ptr, R5_RPMSG_TYPE 
     split_lines(buffer, nbytes, filedes, endp_ptr, rpmsg_ptr);
     return 0;
     }
+  }
+
+
+//-------------------------------------------------------------------
+
+void ReadSCPIconf(const char *fname, RPMSG_ENDP_TYPE *endp_ptr, R5_RPMSG_TYPE *rpmsg_ptr)
+  {
+  int fd, eof;
+
+  // I don't test errors; note that the config file is optional
+
+  fd=open(fname,O_RDONLY);
+  if(fd!=-1)
+    for(eof=0; eof==0;)
+      eof=SCPI_read_from_client(fd, endp_ptr, rpmsg_ptr);
+  (void)close(fd);
   }
 
 

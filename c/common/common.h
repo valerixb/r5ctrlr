@@ -27,6 +27,7 @@
 #define XST_FAILURE                     1L
 
 typedef __uint32_t u32;
+typedef __uint16_t u16;
 typedef    int16_t s16;
 typedef    int32_t s32;
 
@@ -91,6 +92,9 @@ typedef    int32_t s32;
 #define RPMSGCMD_READ_IIR_COEFF            44
 #define RPMSGCMD_WRITE_MATRIX_ROW          45
 #define RPMSGCMD_READ_MATRIX_ROW           46
+#define RPMSGCMD_READ_DIGIN                47
+#define RPMSGCMD_WRITE_DIGOUT              48
+#define RPMSGCMD_READ_DIGOUT               49
 
 // R5 application state
 #define R5CTRLR_IDLE     0

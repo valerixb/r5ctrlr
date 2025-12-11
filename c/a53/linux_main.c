@@ -35,6 +35,9 @@ WAVEGEN_CH_CONFIG gWavegenChanConfig[4];
 TRIG_CONFIG gRecorderConfig;
 CTRLLOOP_CH_CONFIG gCtrlLoopChanConfig[4];
 
+// digital I/Os
+u16 gDigOut, gDigIn;
+
 
 struct remoteproc_priv rproc_priv = 
   {
@@ -542,6 +545,15 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
         }
       break;
 
+    // readback DIG OUT values sent by R5
+    case RPMSGCMD_READ_DIGOUT:
+      gDigOut=(u16)((((R5_RPMSG_TYPE*)data)->data[0])&0x0000FFFF);
+      break;
+
+    // readback DIG IN values sent by R5
+    case RPMSGCMD_READ_DIGIN:
+      gDigIn=(u16)((((R5_RPMSG_TYPE*)data)->data[0])&0x0000FFFF);
+      break;
     }
 
   return RPMSG_SUCCESS;
@@ -794,6 +806,10 @@ void InitVars(void)
       }
     
     }
+
+  // digital I/Os
+  gDigOut=0;
+  gDigIn=0;
   }
 
 // -----------------------------------------------------------
@@ -826,6 +842,9 @@ int main(int argc, char *argv[])
     return status;
     }
   
+  // load initial configuration from file
+  ReadSCPIconf(SCPI_SERVER_CONFIG_FILENAME, &endp, gMsgPtr);
+
   status = startSCPIserver(&sock, &active_fd_set);
   if(status!=SCPI_NO_ERR)
     {
