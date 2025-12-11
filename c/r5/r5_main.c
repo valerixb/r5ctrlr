@@ -1725,8 +1725,8 @@ int SetupIRQs(void)
   //Xil_ExceptionEnableMask(XIL_EXCEPTION_IRQ);
   Xil_ExceptionEnableMask(XIL_EXCEPTION_ALL);
 
-  // now start timer
-  XTmrCtr_Start(&theTimer, TIMER_NUMBER);
+  // start sampling timer only AFTER configuring the analog card
+  // XTmrCtr_Start(&theTimer, TIMER_NUMBER);
 
 
   return XST_SUCCESS;
@@ -2107,6 +2107,9 @@ int SetupSystem(void **platformp)
   Setup_Analog_Card();
   Setup_Digital_Card();
 
+  // start sampling timer only AFTER configuring the analog card
+  XTmrCtr_Start(&theTimer, TIMER_NUMBER);
+
   return XST_SUCCESS;
   }
 
@@ -2369,7 +2372,7 @@ int main()
       #endif
 
       // read digital inputs
-      //cicci Analog_Card_DigIN(&gDigIn);
+      Analog_Card_DigIN(&gDigIn);
 
       // read ADC raw value as signed 16-bit 2's complement integer into adcval[i]
       Analog_Card_Read_ADC(adcval);
@@ -2618,7 +2621,7 @@ int main()
       //status = CN0585_UpdateDacOutput(1);
 
       // update digital out
-      //cicci Analog_Card_DigOUT(gDigOut);
+      Analog_Card_DigOUT(gDigOut);
 
       // register time of end of control loop step
       #ifdef PROFILE

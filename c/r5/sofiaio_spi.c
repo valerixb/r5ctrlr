@@ -353,6 +353,10 @@ int SofiaIO_SPI_DAC_Init(void)
 int SofiaIO_SPI_DigOUT(u16 val)
   {
   int status=XST_SUCCESS;
+  u16 swapped;
+
+  // multibyte SPI transmits least sign BYTE (not bit) first, receives most sign byte first
+  swapped = ((val & 0x00FF)<<8) | ((val & 0xFF00)>>8);
 
   // CPOL=0, CPHA=0
   status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION );
@@ -365,7 +369,19 @@ int SofiaIO_SPI_DigOUT(u16 val)
   XGpio_DiscreteWrite(&Sofiaio_GpioInstance,SOFIAIO_SPI_GPIO_OUT_CH, 
                       SOFIAIO_SPI_GPIO_DAC_RESETN | SOFIAIO_SPI_DIGOUT16BIT_ADDR);
   
-  SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, &val, NULL);
+  status = AssertCS(&Sofiaio_SpiInstance);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
+
+  SofiaIO_SPI_16bit_transaction(&Sofiaio_SpiInstance, &swapped, NULL);
+
+  status = DeassertCS(&Sofiaio_SpiInstance);
+  if(status != XST_SUCCESS)
+    {
+    return XST_FAILURE;
+    }
 
   return status;
   }
@@ -378,8 +394,8 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
   static u8  outbuf[4], inbuf[4];
   int status=XST_SUCCESS;
 
-  // CPOL=1, CPHA=0
-  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION | XSP_CLK_ACTIVE_LOW_OPTION);
+  // CPOL=0, CPHA=0
+  status = XSpi_SetOptions(&Sofiaio_SpiInstance, XSP_MASTER_OPTION | XSP_MANUAL_SSELECT_OPTION );
   if(status != XST_SUCCESS)
     {
     return XST_FAILURE;
@@ -403,7 +419,7 @@ int SofiaIO_SPI_DigIN(u16 *ptr)
 
   // don't check status, as I want to end the SPI transaction releasing /CS
 
-  *ptr = inbuf[2] + ((u16)inbuf[1])<<8;
+  *ptr = ((u16)inbuf[0]) | (((u16)inbuf[1])<<8);
 
   status = DeassertCS(&Sofiaio_SpiInstance);
   if(status != XST_SUCCESS)
