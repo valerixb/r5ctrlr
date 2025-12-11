@@ -11,8 +11,8 @@
 // It's interfaced via our custom IP in PL
 //
 
-#ifndef AD3552_H_
-#define AD3552_H_
+#ifndef CN0585_DAC_H_
+#define CN0585_DAC_H_
 
 #include "xparameters.h"
 #include "xil_printf.h"
@@ -86,10 +86,10 @@
 // ##########  extern globals  ################
 
 // ##########  protos  ########################
-int InitAD3552(void);
-int WriteDacRegister(int DACindex, u32 addr, u8 data);
-int ReadDacRegister(int DACindex, u32 addr, u8* dataptr);
-int WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data);
-int UpdateDacOutput(int DACindex);
+int CN0585_Init_DAC(void);
+int CN0585_WriteDacRegister(int DACindex, u32 addr, u8 data);
+int CN0585_ReadDacRegister(int DACindex, u32 addr, u8* dataptr);
+int CN0585_WriteDacSamples(int DACindex, u16 ch0data, u16 ch1data);
+int CN0585_UpdateDacOutput(int DACindex);
 
 #endif

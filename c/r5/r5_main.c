@@ -12,9 +12,15 @@
 
 #include "r5_main.h"
 
+// set verbosity; printout are slow, so use none in production real time controller
 //#define PROFILE
 //#define PRINTOUT
 //#define RPMSG_DEBUG
+
+// choose which analog card we have
+//#define ANALOG_CARD_CN0585
+#define ANALOG_CARD_SOFIAIO_SPI
+
 
 // ##########  globals  #######################
 
@@ -71,8 +77,7 @@ int gTimerIRQoccurred;
 
 // ADC sampling and waveform generation
 double gFsampl;
-s16    adcval[4];
-u16    dacval[4];
+s16    adcval[4],dacval[4];
 double g_x[4], g_x_1[4],g_ywgen[4],g_ydac[4];
 // I need s32 for offset because I need to cover the case offs=-32768, 
 // used to convert the ADC range from [-32768,32767] to [0,65535]
@@ -87,10 +92,12 @@ unsigned long gTotSweepSamples[4], gCurSweepSamples[4], curShmSampleNum;
 
 CTRLLOOP_CH_CONFIG gCtrlLoopChanConfig[4];
 
+// digital I/Os
+u16 gDigOut, gDigIn;
 
 // table of execution times for profiling;
 // entries are <x>, <x^2>, min, max, N_entries
-double time_table[PROFILE_TIME_ENTRIES][5];
+double time_table[PROFILE_TIME_ENTRIES][10];
 
 
 // ##########  implementation  ################
@@ -1321,6 +1328,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
     case RPMSGCMD_RESET:
       InitVars();
       Setup_Analog_Card();
+      Setup_Digital_Card();
       SetSamplingFreq((u32)gFsampl);
       break;
 
@@ -1394,6 +1402,45 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
         }
       break;
 
+    // update DIGITAL OUTPUTS with the values requested by linux
+    case RPMSGCMD_WRITE_DIGOUT:
+      gDigOut=(u16)((((R5_RPMSG_TYPE*)data)->data[0])&0x0000FFFF);
+      break;
+
+    // read back DIGITAL OUTPUTS value to linux
+    case RPMSGCMD_READ_DIGOUT:
+      ((R5_RPMSG_TYPE*)data)->command = RPMSGCMD_READ_DIGOUT;
+      ((R5_RPMSG_TYPE*)data)->data[0] = (u32)(gDigOut);
+      numbytes= rpmsg_send(ept, data, rpmsglen);
+      if(numbytes<rpmsglen)
+        {
+        // answer transmission incomplete
+        LPRINTF("DIGOUT READBACK incomplete answer transmitted.\n\r");
+        #ifdef RPMSG_DEBUG
+          return RPMSG_ERR_BUFF_SIZE;
+        #else
+          return RPMSG_SUCCESS;
+        #endif
+        }
+      break;
+
+    // read back DIGITAL INPUTS value to linux
+    case RPMSGCMD_READ_DIGIN:
+      ((R5_RPMSG_TYPE*)data)->command = RPMSGCMD_READ_DIGIN;
+      ((R5_RPMSG_TYPE*)data)->data[0] = (u32)(gDigIn);
+      numbytes= rpmsg_send(ept, data, rpmsglen);
+      if(numbytes<rpmsglen)
+        {
+        // answer transmission incomplete
+        LPRINTF("DIGIN READBACK incomplete answer transmitted.\n\r");
+        #ifdef RPMSG_DEBUG
+          return RPMSG_ERR_BUFF_SIZE;
+        #else
+          return RPMSG_SUCCESS;
+        #endif
+        }
+      break;
+    
     }
 
   return RPMSG_SUCCESS;
@@ -1678,8 +1725,8 @@ int SetupIRQs(void)
   //Xil_ExceptionEnableMask(XIL_EXCEPTION_IRQ);
   Xil_ExceptionEnableMask(XIL_EXCEPTION_ALL);
 
-  // now start timer
-  XTmrCtr_Start(&theTimer, TIMER_NUMBER);
+  // start sampling timer only AFTER configuring the analog card
+  // XTmrCtr_Start(&theTimer, TIMER_NUMBER);
 
 
   return XST_SUCCESS;
@@ -1714,8 +1761,9 @@ int CleanupIRQs(void)
 int SetupAXIGPIO(void)
   {
   int status;
-
-  gpioConfig=XGpio_LookupConfig(GPIO_DEVICE_ID);
+  
+  // you can use the base address to lookup the config even if the documentation talks of ID
+  gpioConfig=XGpio_LookupConfig(PL_GPIO_BADDR);
   if(NULL==gpioConfig) 
     return XST_FAILURE;
 
@@ -1852,49 +1900,135 @@ static struct remoteproc *SetupRpmsg(int proc_index, int rsc_index)
 
 void Setup_Analog_Card(void)
   {
-  int status;
+  int status=XST_SUCCESS;
 
-  // setup analog card (ADI CN0585)
-  status = InitMAX7301();
+  #ifdef ANALOG_CARD_CN0585
+  // ADI CN0585
+  status = CN0585_Init_GPIO();
   if(status!=XST_SUCCESS)
     {
-    LPRINTF("Error in MAX7301 initialization.\r\n");
+    LPRINTF("Error in CN0585/MAX7301 initialization.\r\n");
     return XST_FAILURE;
     }
   else
     {
-    LPRINTF("MAX7301 successfully initialized\r\n");
+    LPRINTF("CN0585/MAX7301 successfully initialized\r\n");
     }
 
-  status = InitAD3552();
+  status = CN0585_Init_DAC();
   if(status!=XST_SUCCESS)
     {
-    LPRINTF("Error in AD3552 initialization.\r\n");
+    LPRINTF("Error in CN0585/AD3552 initialization.\r\n");
     return XST_FAILURE;
     }
   else
     {
-    LPRINTF("AD3552 successfully initialized\r\n");
+    LPRINTF("CN0585/AD3552 successfully initialized\r\n");
     }
 
-  status = InitADAQ23876();
+  status = CN0585_Init_ADC();
   if(status!=XST_SUCCESS)
     {
-    LPRINTF("Error in ADAQ23876 initialization.\r\n");
+    LPRINTF("Error in CN0585/ADAQ23876 initialization.\r\n");
     return XST_FAILURE;
     }
   else
     {
-    LPRINTF("ADAQ23876 successfully initialized\r\n");
+    LPRINTF("CN0585/ADAQ23876 successfully initialized\r\n");
     }
 
   // set a known initial pattern on the DAC outputs for debug purposes
-  // status = WriteDacSamples(0,0x4000, 0xC000);
-  // status = UpdateDacOutput(0);
-  // status = WriteDacSamples(1,0xC000, 0x4000);
-  // status = UpdateDacOutput(1);
+  // status = CN0585_WriteDacSamples(0,0x4000, 0xC000);
+  // status = CN0585_UpdateDacOutput(0);
+  // status = CN0585_WriteDacSamples(1,0xC000, 0x4000);
+  // status = CN0585_UpdateDacOutput(1);
+  #endif
+
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  
+  // Sofia's IO card connected via SPI
+  status = SofiaIO_SPI_Init();
+  if(status!=XST_SUCCESS)
+    {
+    LPRINTF("Error in SofiaIO-SPI initialization.\r\n");
+    return XST_FAILURE;
+    }
+  else
+    {
+    LPRINTF("SofiaIO-SPI successfully initialized\r\n");
+    }
+  
+  #endif
+
   }
 
+
+// -----------------------------------------------------------
+
+void Setup_Digital_Card(void)
+  {
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_DigOUT((u16)0);
+  #endif
+  }
+
+
+// -----------------------------------------------------------
+
+void Analog_Card_DigIN(u16 *ptr)
+  {
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_DigIN(ptr);
+  #endif
+  }
+
+
+// -----------------------------------------------------------
+
+void Analog_Card_DigOUT(u16 val)
+  {
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_DigOUT(val);
+  #endif
+  }
+
+
+// -----------------------------------------------------------
+
+// read ADC raw value as signed 16-bit 2's complement integer
+
+void Analog_Card_Read_ADC(s16 *ptr)
+  {
+  #ifdef ANALOG_CARD_CN0585
+  CN0585_ReadADCs(ptr);
+  #endif
+
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_ReadADCs(ptr);
+  #endif
+  }
+
+
+// -----------------------------------------------------------
+
+// write DAC raw value as signed 16-bit 2's complement integer
+
+void Analog_Card_Write_DAC(s16 *ptr)
+  {
+  // DAC AD3552 is offset binary;
+  // usual conversion from 2's complement is done inverting the MSB,
+  // but here I prefer to offset and round, which is clearer
+
+  #ifdef ANALOG_CARD_CN0585
+  (void)CN0585_WriteDacSamples(0,(u16)round(*ptr    +AD3552_OFFS), (u16)round(*(ptr+1)+AD3552_OFFS));
+  (void)CN0585_WriteDacSamples(1,(u16)round(*(ptr+2)+AD3552_OFFS), (u16)round(*(ptr+3)+AD3552_OFFS));
+  #endif
+
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  (void)SofiaIO_SPI_WriteDacSamples(0,(u16)round(*ptr    +AD3552_OFFS), (u16)round(*(ptr+1)+AD3552_OFFS));
+  (void)SofiaIO_SPI_WriteDacSamples(1,(u16)round(*(ptr+2)+AD3552_OFFS), (u16)round(*(ptr+3)+AD3552_OFFS));
+  #endif
+  }
 
 // -----------------------------------------------------------
 
@@ -1970,8 +2104,11 @@ int SetupSystem(void **platformp)
     LPRINTF("ADC sample shared memory successfully initialized\r\n");
     }
 
-  // setup analog card (ADI CN0585)
   Setup_Analog_Card();
+  Setup_Digital_Card();
+
+  // start sampling timer only AFTER configuring the analog card
+  XTmrCtr_Start(&theTimer, TIMER_NUMBER);
 
   return XST_SUCCESS;
   }
@@ -2152,6 +2289,9 @@ void InitVars(void)
 
     }
 
+  // digital I/Os
+  gDigOut=0;
+  gDigIn=0;
 
   // init number of IRQ served
   last_irq_cnt=0;
@@ -2164,7 +2304,7 @@ void InitVars(void)
 int main()
   {
   unsigned int thereg, theval;
-  int          status, i;
+  int          status, i, firsttime=1;
   double       currtimer_us, sigma;
   double       dphase, alpha, dfreq;
   double       cmd, loopvar[4];
@@ -2201,7 +2341,8 @@ int main()
 
   LPRINTF("Starting main loop\n\r");
 
-  shutdown_req = 0;  
+  shutdown_req = 0;
+  firsttime=1;
   // shutdown_req will be set set to 1 by RPMSG unbind callback
   while(!shutdown_req)
     {
@@ -2213,13 +2354,13 @@ int main()
 
     if(gTimerIRQoccurred!=0)
       {
-      // check for overrun (it should NOT happen)
-      if(gTimerIRQoccurred>1)
+      // check for overrun (it should NOT happen, except the first time we enter the loop)
+      if((gTimerIRQoccurred>1)&&(firsttime==0))
         LPRINTF("ERROR - timer IRQ overrun\n\r");
       // reset timer IRQ flag
       gTimerIRQoccurred=0;
 
-      // register IRQ latency as row 0 of prifile time table
+      // register IRQ latency as row 0 of profile time table
       #ifdef PROFILE
       AddTimeToTable(0,gTimerIRQlatency);
       #endif
@@ -2230,10 +2371,20 @@ int main()
       AddTimeToTable(1,currtimer_us);
       #endif
 
+      // read digital inputs
+      Analog_Card_DigIN(&gDigIn);
 
-      // read ADCs into raw (adcval[i]) and with fullscale = 1.0 (g_x[i])
+      // read ADC raw value as signed 16-bit 2's complement integer into adcval[i]
+      Analog_Card_Read_ADC(adcval);
+
+      // register time of end of ADC readout
+      #ifdef PROFILE
+      currtimer_us=GetTimer_us();
+      AddTimeToTable(2,currtimer_us);
+      #endif
+
+      // now convert ADC values to fullscale = 1.0 (g_x[i])
       // taking into account offset and gain correction
-      ReadADCs(adcval);
       for(i=0; i<4; i++)
         {
         // x_(n-1)
@@ -2241,7 +2392,7 @@ int main()
         // x_(n)
         // offset correction must be applied before converting to floating point, 
         // for best dynamic range exploitation
-        g_x[i]=(adcval[i]+gADC_offs_cnt[i])/ADAQ23876_FULLSCALE_CNT*(double)(gADC_gain[i]);
+        g_x[i]=(adcval[i]+gADC_offs_cnt[i])/ANALOG_FULLSCALE_CNT*(double)(gADC_gain[i]);
         }
 
 
@@ -2396,7 +2547,7 @@ int main()
       // register time of end of sine wave calculation
       #ifdef PROFILE
       currtimer_us=GetTimer_us();
-      AddTimeToTable(2,currtimer_us);
+      AddTimeToTable(3,currtimer_us);
       #endif
 
 
@@ -2444,7 +2595,7 @@ int main()
       // register time of end of control loop calculation
       #ifdef PROFILE
       currtimer_us=GetTimer_us();
-      AddTimeToTable(3,currtimer_us);
+      AddTimeToTable(4,currtimer_us);
       #endif
 
 
@@ -2453,26 +2604,24 @@ int main()
 
       // write DACs from values with fullscale = 1 (g_ydac[i]) into raw (dacval[i])
 
-      // DAC AD3552 is offset binary;
-      // usual conversion from 2's complement is done inverting the MSB,
-      // but here I prefer to keep a fullscale of +/-1 (double) in the calculations,
-      // so I just scale and offset at the end, which is clearer
       for(i=0; i<4; i++)
         {
         // FIRST I add the offset, THEN I saturate
-        DACtemp[i]=g_ydac[i]*AD3552_AMPL+gDAC_offs_cnt[i];
-        if(DACtemp[i]>AD3552_MAX)
-          DACtemp[i]=AD3552_MAX;
-        else if(DACtemp[i]<-AD3552_MAX)
-          DACtemp[i]=-AD3552_MAX;
-        dacval[i]=(u16)round(DACtemp[i]+AD3552_OFFS);
+        DACtemp[i]=g_ydac[i]*ANALOG_FULLSCALE_CNT+gDAC_offs_cnt[i];
+        if(DACtemp[i]>(ANALOG_FULLSCALE_CNT-1))
+          DACtemp[i]=(ANALOG_FULLSCALE_CNT-1);
+        else if(DACtemp[i]<-ANALOG_FULLSCALE_CNT)
+          DACtemp[i]=-ANALOG_FULLSCALE_CNT;
+        dacval[i]=(s16)round(DACtemp[i]);
         }
       
-      status = WriteDacSamples(0,dacval[0], dacval[1]);
-      status = WriteDacSamples(1,dacval[2], dacval[3]);
+      Analog_Card_Write_DAC(dacval);
       // DAC output will be updated by hardware /LDAC pulse on next cycle 
-      //status = UpdateDacOutput(0);
-      //status = UpdateDacOutput(1);
+      //status = CN0585_UpdateDacOutput(0);
+      //status = CN0585_UpdateDacOutput(1);
+
+      // update digital out
+      Analog_Card_DigOUT(gDigOut);
 
       // register time of end of control loop step
       #ifdef PROFILE
@@ -2493,14 +2642,17 @@ int main()
         //  // print IRQ number
         //  LPRINTF("Tot IRQs so far: %d \n\r",last_irq_cnt);
 
+        // print # of GPIO IRQs
+        LPRINTF("GPIO IRQs so far: %d \n\r",irq_cntr[GPIO_IRQ_CNTR]);
+
         // print ADC values
         if(true)
           {
           for(i=0; i<4; i++)
             // LPRINTF("ADC#%d = %3d.%03d ",
             //         i,
-            //         (int)(g_x[i]*ADAQ23876_FULLSCALE_VOLT),
-            //         DECIMALS(g_x[i]*ADAQ23876_FULLSCALE_VOLT,3)
+            //         (int)(g_x[i]*ANALOG_FULLSCALE_VOLT),
+            //         DECIMALS(g_x[i]*ANALOG_FULLSCALE_VOLT,3)
             //        );
             LPRINTF("ADC#%d = %6d ",i, adcval[i]);
           LPRINTF("\n\r");
@@ -2604,16 +2756,22 @@ int main()
           (int)(time_table[1][PROFTIME_MAX]), DECIMALS(time_table[1][PROFTIME_MAX],3) );
   
         sigma=time_table[2][PROFTIME_AVG2]-time_table[2][PROFTIME_AVG]*time_table[2][PROFTIME_AVG];
-        LPRINTF("End of Sine Wave Calc (us)    : avg= %d ; s= %d.%03d; max= %d\n\r", 
+        LPRINTF("End ADC readoutc (us)         : avg= %d ; s= %d.%03d; max= %d\n\r", 
           (int)(time_table[2][PROFTIME_AVG]), 
           (int)(sigma), DECIMALS(sigma, 3),
           (int)(time_table[2][PROFTIME_MAX]) );
 
         sigma=time_table[3][PROFTIME_AVG2]-time_table[3][PROFTIME_AVG]*time_table[3][PROFTIME_AVG];
-        LPRINTF("End of Control Loop (us)      : avg= %d ; s= %d.%03d; max= %d\n\r", 
+        LPRINTF("End of Sine Wave Calc (us)    : avg= %d ; s= %d.%03d; max= %d\n\r", 
           (int)(time_table[3][PROFTIME_AVG]), 
           (int)(sigma), DECIMALS(sigma, 3),
           (int)(time_table[3][PROFTIME_MAX]) );
+
+        sigma=time_table[4][PROFTIME_AVG2]-time_table[4][PROFTIME_AVG]*time_table[4][PROFTIME_AVG];
+        LPRINTF("End of Control Loop (us)      : avg= %d ; s= %d.%03d; max= %d\n\r", 
+          (int)(time_table[4][PROFTIME_AVG]), 
+          (int)(sigma), DECIMALS(sigma, 3),
+          (int)(time_table[4][PROFTIME_MAX]) );
 
         LPRINTF("Ctrl loop step end (us)       : avg= %d ; max= %d\n\r", 
           (int)(time_table[PROFILE_TIME_ENTRIES-1][PROFTIME_AVG]), 
@@ -2626,6 +2784,7 @@ int main()
         }
       #endif  // PROFILE
 
+      firsttime=0;
       }  // if timer occurred
 
     }  // if not shutdown

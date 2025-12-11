@@ -11,13 +11,13 @@
 // It's interfaced via our custom IP in PL
 //
 
-#include "adaq23876.h"
+#include "cn0585_adc.h"
 
 // ##########  globals  #######################
 
 // ##########  implementation  ################
 
-int InitADAQ23876(void)
+int CN0585_Init_ADC(void)
   {
   int i, status;
   *((volatile u32 *)XPAR_QUAD_ADAQ23876_0_BASEADDR+ADC_CTRL_WORD) = ADC_TACQ | ADC_SCLK_DIV;
@@ -29,7 +29,7 @@ int InitADAQ23876(void)
 // -----------------------------------------------------------
 
 // s16 means signed int 16
-void ReadADCs(s16 *ptr)
+void CN0585_ReadADCs(s16 *ptr)
   {
   u32 x;
   x=*((volatile u32 *)XPAR_QUAD_ADAQ23876_0_BASEADDR+ADC_chan_B_A);

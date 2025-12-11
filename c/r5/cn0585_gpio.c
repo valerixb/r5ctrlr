@@ -12,7 +12,7 @@
 // It's interfaced via a Xilinx standard AXI (quad) SPI IP in PL
 //
 
-#include "max7301.h"
+#include "cn0585_gpio.h"
 
 // ##########  globals  #######################
 
@@ -48,7 +48,7 @@ u16 MAX7301_Commands[MAX7301_COMMAND_WORDCOUNT]=
 
 // ##########  implementation  ################
 
-int InitMAX7301(void)
+int CN0585_Init_GPIO(void)
   {
   int status;
   XSpi_Config *configPtr;

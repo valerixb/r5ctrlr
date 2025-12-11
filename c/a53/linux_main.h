@@ -34,6 +34,8 @@
 #define RPMSG_ANSWER_ERR       1
 #define RPMSG_ANSWER_TIMEOUT   2
 
+#define SCPI_SERVER_CONFIG_FILENAME  "/etc/scpi.conf"
+
 // ##########  extern globals  ################
 extern void *gplatform;
 extern s16 g_adcval[4], g_dacval[4];
@@ -45,6 +47,9 @@ extern s32 gADC_offs_cnt[4], gDAC_offs_cnt[4];
 extern int gDAC_outputSelect[4];
 extern float gADC_gain[4];
 extern CTRLLOOP_CH_CONFIG gCtrlLoopChanConfig[4];
+// digital I/Os
+extern u16 gDigOut, gDigIn;
+
 
 
 
