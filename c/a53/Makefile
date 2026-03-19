@@ -2,9 +2,9 @@ OBJ_LOCAL = linux_main.o SCPIserver.o
 COMMON_DIR = ../common
 OBJ_COMMON = platform.o rproc.o rsc_table.o sample_shmem.o
 TARGET = A53app.elf
-SYSROOT_PATH = /xilinxworks/ZCU102/v2024.2/r5ctrlr/r5ctrlr/sysroot/sysroots/cortexa72-cortexa53-xilinx-linux
+SYSROOT_PATH = /xilinxworks/ZCU102/v2025.2/r5ctrlr/r5ctrlr/sysroot/sysroots/cortexa72-cortexa53-amd-linux
 
-CC = /tools/Xilinx/Vitis/2024.2/gnu/aarch64/lin/aarch64-linux/bin/aarch64-linux-gnu-gcc
+CC = /tools/Xilinx/2025.2/Vitis/gnu/aarch64/lin/aarch64-linux/bin/aarch64-linux-gnu-gcc
 CFLAGS = -O0 -g3 -Wall -I../common \
          --sysroot=$(SYSROOT_PATH) \
          -I$(SYSROOT_PATH)/usr/include

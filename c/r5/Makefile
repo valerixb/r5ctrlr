@@ -2,9 +2,9 @@ OBJ_LOCAL = r5_main.o sofiaio_spi.o cn0585_gpio.o cn0585_dac.o cn0585_adc.o doub
 COMMON_DIR = ../common
 OBJ_COMMON = platform.o rproc.o rsc_table.o sample_shmem.o 
 TARGET = R5app.elf
-PLATFORM_PATH = /xilinxworks/ZCU102/v2024.2/r5ctrlr/r5ctrlr/hardware/vitis-workspace/ZCU102-r5ctrlr
+PLATFORM_PATH = /xilinxworks/ZCU102/v2025.2/r5ctrlr/r5ctrlr/hardware/vitis-workspace/ZCU102-r5ctrlr
 
-CC = /tools/Xilinx/Vitis/2024.2/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-gcc
+CC = /tools/Xilinx/2025.2/Vitis/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-gcc
 CFLAGS = -O0 -g3 -Wall -I../common \
          -I$(PLATFORM_PATH)/export/ZCU102-r5ctrlr/sw/standalone_psu_cortexr5_0/include \
          -isystem $(PLATFORM_PATH)/export/ZCU102-r5ctrlr/sw/standalone_psu_cortexr5_0/include \
@@ -14,7 +14,7 @@ CFLAGS = -O0 -g3 -Wall -I../common \
          -DXLNX_PLATFORM -D__BAREMETAL__ -DSDT -mcpu=cortex-r5 -mfloat-abi=hard -mfpu=vfpv3-d16 -DARMR5
 LDFLAGS = -Wall \
           -DSDT -mcpu=cortex-r5 -DARMR5 -mfloat-abi=hard -mfpu=vfpv3-d16 \
-          -L/xilinxworks/ZCU102/v2024.2/r5ctrlr/r5ctrlr/hardware/vitis-workspace/ZCU102-r5ctrlr/export/ZCU102-r5ctrlr/sw/standalone_psu_cortexr5_0/lib \
+          -L/xilinxworks/ZCU102/v2025.2/r5ctrlr/r5ctrlr/hardware/vitis-workspace/ZCU102-r5ctrlr/export/ZCU102-r5ctrlr/sw/standalone_psu_cortexr5_0/lib \
           -Wl,-T -Wl,"lscript.ld" \
           -Wl,--start-group,-lxilstandalone  -lxiltimer  -lmetal  -lopen_amp  -lm  -lxil  -lgcc  -lc  -lm  -Wl,--end-group \
           -lxil  -lgcc  -lc \

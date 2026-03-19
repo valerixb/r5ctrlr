@@ -155,42 +155,42 @@
 #set_property IOSTANDARD  LVCMOS33 [get_ports "TRACEDATA4"] ;# Bank  48 VCCO - VCC3V3   - IO_L1N_AD15N_48
 #set_property PACKAGE_PIN H18      [get_ports "TRACEDATA3"] ;# Bank  48 VCCO - VCC3V3   - IO_L1P_AD15P_48
 #set_property IOSTANDARD  LVCMOS33 [get_ports "TRACEDATA3"] ;# Bank  48 VCCO - VCC3V3   - IO_L1P_AD15P_48
-#set_property PACKAGE_PIN A20      [get_ports "PMOD0_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L12N_AD0N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L12N_AD0N_47
-#set_property PACKAGE_PIN B20      [get_ports "PMOD0_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L12P_AD0P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L12P_AD0P_47
-#set_property PACKAGE_PIN A22      [get_ports "PMOD0_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L11N_AD1N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L11N_AD1N_47
-#set_property PACKAGE_PIN A21      [get_ports "PMOD0_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L11P_AD1P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L11P_AD1P_47
-#set_property PACKAGE_PIN B21      [get_ports "PMOD0_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L10N_AD2N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L10N_AD2N_47
+set_property PACKAGE_PIN A20      [get_ports "PMOD0_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L12N_AD0N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L12N_AD0N_47
+set_property PACKAGE_PIN B20      [get_ports "PMOD0_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L12P_AD0P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L12P_AD0P_47
+set_property PACKAGE_PIN A22      [get_ports "PMOD0_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L11N_AD1N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L11N_AD1N_47
+set_property PACKAGE_PIN A21      [get_ports "PMOD0_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L11P_AD1P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L11P_AD1P_47
+set_property PACKAGE_PIN B21      [get_ports "PMOD0_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L10N_AD2N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L10N_AD2N_47
 #set_property PACKAGE_PIN C21      [get_ports "PMOD0_5"] ;# Bank  47 VCCO - VCC3V3   - IO_L10P_AD2P_47
 #set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_5"] ;# Bank  47 VCCO - VCC3V3   - IO_L10P_AD2P_47
 #set_property PACKAGE_PIN C22      [get_ports "PMOD0_6"] ;# Bank  47 VCCO - VCC3V3   - IO_L9N_AD3N_47
 #set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_6"] ;# Bank  47 VCCO - VCC3V3   - IO_L9N_AD3N_47
-#set_property PACKAGE_PIN D21      [get_ports "PMOD0_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L9P_AD3P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L9P_AD3P_47
-#set_property PACKAGE_PIN D20      [get_ports "PMOD1_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L8N_HDGC_AD4N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L8N_HDGC_AD4N_47
-#set_property PACKAGE_PIN E20      [get_ports "PMOD1_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L8P_HDGC_AD4P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L8P_HDGC_AD4P_47
-#set_property PACKAGE_PIN D22      [get_ports "PMOD1_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L7N_HDGC_AD5N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L7N_HDGC_AD5N_47
-#set_property PACKAGE_PIN E22      [get_ports "PMOD1_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L7P_HDGC_AD5P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L7P_HDGC_AD5P_47
-#set_property PACKAGE_PIN F20      [get_ports "PMOD1_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L6N_HDGC_AD6N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L6N_HDGC_AD6N_47
-#set_property PACKAGE_PIN G20      [get_ports "PMOD1_5"] ;# Bank  47 VCCO - VCC3V3   - IO_L6P_HDGC_AD6P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_5"] ;# Bank  47 VCCO - VCC3V3   - IO_L6P_HDGC_AD6P_47
+set_property PACKAGE_PIN D21      [get_ports "PMOD0_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L9P_AD3P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD0_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L9P_AD3P_47
+set_property PACKAGE_PIN D20      [get_ports "PMOD1_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L8N_HDGC_AD4N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_0"] ;# Bank  47 VCCO - VCC3V3   - IO_L8N_HDGC_AD4N_47
+set_property PACKAGE_PIN E20      [get_ports "PMOD1_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L8P_HDGC_AD4P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_1"] ;# Bank  47 VCCO - VCC3V3   - IO_L8P_HDGC_AD4P_47
+set_property PACKAGE_PIN D22      [get_ports "PMOD1_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L7N_HDGC_AD5N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_2"] ;# Bank  47 VCCO - VCC3V3   - IO_L7N_HDGC_AD5N_47
+set_property PACKAGE_PIN E22      [get_ports "PMOD1_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L7P_HDGC_AD5P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_3"] ;# Bank  47 VCCO - VCC3V3   - IO_L7P_HDGC_AD5P_47
+set_property PACKAGE_PIN F20      [get_ports "PMOD1_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L6N_HDGC_AD6N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_4"] ;# Bank  47 VCCO - VCC3V3   - IO_L6N_HDGC_AD6N_47
+set_property PACKAGE_PIN G20      [get_ports "PMOD1_5"] ;# Bank  47 VCCO - VCC3V3   - IO_L6P_HDGC_AD6P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_5"] ;# Bank  47 VCCO - VCC3V3   - IO_L6P_HDGC_AD6P_47
 #set_property PACKAGE_PIN F21      [get_ports "CLK_125_N"] ;# Bank  47 VCCO - VCC3V3   - IO_L5N_HDGC_AD7N_47
 #set_property IOSTANDARD  LVDS_25  [get_ports "CLK_125_N"] ;# Bank  47 VCCO - VCC3V3   - IO_L5N_HDGC_AD7N_47
 #set_property PACKAGE_PIN G21      [get_ports "CLK_125_P"] ;# Bank  47 VCCO - VCC3V3   - IO_L5P_HDGC_AD7P_47
 #set_property IOSTANDARD  LVDS_25  [get_ports "CLK_125_P"] ;# Bank  47 VCCO - VCC3V3   - IO_L5P_HDGC_AD7P_47
-#set_property PACKAGE_PIN J20      [get_ports "PMOD1_6"] ;# Bank  47 VCCO - VCC3V3   - IO_L4N_AD8N_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_6"] ;# Bank  47 VCCO - VCC3V3   - IO_L4N_AD8N_47
-#set_property PACKAGE_PIN J19      [get_ports "PMOD1_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L4P_AD8P_47
-#set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L4P_AD8P_47
+set_property PACKAGE_PIN J20      [get_ports "PMOD1_6"] ;# Bank  47 VCCO - VCC3V3   - IO_L4N_AD8N_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_6"] ;# Bank  47 VCCO - VCC3V3   - IO_L4N_AD8N_47
+set_property PACKAGE_PIN J19      [get_ports "PMOD1_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L4P_AD8P_47
+set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_7"] ;# Bank  47 VCCO - VCC3V3   - IO_L4P_AD8P_47
 #set_property PACKAGE_PIN H21      [get_ports "TRACEDATA2"] ;# Bank  47 VCCO - VCC3V3   - IO_L3N_AD9N_47
 #set_property IOSTANDARD  LVCMOS33 [get_ports "TRACEDATA2"] ;# Bank  47 VCCO - VCC3V3   - IO_L3N_AD9N_47
 #set_property PACKAGE_PIN J21      [get_ports "TRACEDATA1"] ;# Bank  47 VCCO - VCC3V3   - IO_L3P_AD9P_47
@@ -335,8 +335,8 @@ set_property PACKAGE_PIN T11 [get_ports FMC_HPC0_LA32_N]
 set_property IOSTANDARD LVCMOS18 [get_ports FMC_HPC0_LA32_N]
 set_property PACKAGE_PIN U11 [get_ports FMC_HPC0_LA32_P]
 set_property IOSTANDARD LVCMOS18 [get_ports FMC_HPC0_LA32_P]
-set_property PACKAGE_PIN V11 [get_ports {FMC_HPC0_LA33_N[0]}]
-set_property IOSTANDARD LVCMOS18 [get_ports {FMC_HPC0_LA33_N[0]}]
+set_property PACKAGE_PIN V11 [get_ports {FMC_HPC0_LA33_N}]
+set_property IOSTANDARD LVCMOS18 [get_ports {FMC_HPC0_LA33_N}]
 #set_property PACKAGE_PIN V12      [get_ports "FMC_HPC0_LA33_P"] ;# Bank  67 VCCO - VADJ_FMC - IO_L5P_T0U_N8_AD14P_67
 #set_property IOSTANDARD  LVCMOS18 [get_ports "FMC_HPC0_LA33_P"] ;# Bank  67 VCCO - VADJ_FMC - IO_L5P_T0U_N8_AD14P_67
 #set_property PACKAGE_PIN R12      [get_ports "FMC_HPC1_LA26_N"] ;# Bank  67 VCCO - VADJ_FMC - IO_L4N_T0U_N7_DBC_AD7N_67
@@ -436,12 +436,12 @@ set_property IOSTANDARD LVCMOS18 [get_ports FMC_HPC0_LA13_P]
 ##set_property IOSTANDARD  LVCMOSxx [get_ports "7N8551"] ;# Bank  66 VCCO - VADJ_FMC - IO_T1U_N12_66
 ##set_property PACKAGE_PIN W9       [get_ports "7N8554"] ;# Bank  66 VCCO - VADJ_FMC - IO_T0U_N12_VRP_66
 ##set_property IOSTANDARD  LVCMOSxx [get_ports "7N8554"] ;# Bank  66 VCCO - VADJ_FMC - IO_T0U_N12_VRP_66
-set_property PACKAGE_PIN Y9 [get_ports {FMC_HPC0_LA15_N[0]}]
-set_property IOSTANDARD LVCMOS18 [get_ports {FMC_HPC0_LA15_N[0]}]
+set_property PACKAGE_PIN Y9 [get_ports {FMC_HPC0_LA15_N}]
+set_property IOSTANDARD LVCMOS18 [get_ports {FMC_HPC0_LA15_N}]
 set_property PACKAGE_PIN Y10 [get_ports FMC_HPC0_LA15_P]
 set_property IOSTANDARD LVCMOS18 [get_ports FMC_HPC0_LA15_P]
-set_property PACKAGE_PIN AA12 [get_ports {FMC_HPC0_LA16_N[0]}]
-set_property IOSTANDARD LVCMOS18 [get_ports {FMC_HPC0_LA16_N[0]}]
+set_property PACKAGE_PIN AA12 [get_ports {FMC_HPC0_LA16_N}]
+set_property IOSTANDARD LVCMOS18 [get_ports {FMC_HPC0_LA16_N}]
 #set_property PACKAGE_PIN Y12      [get_ports "FMC_HPC0_LA16_P"] ;# Bank  66 VCCO - VADJ_FMC - IO_L5P_T0U_N8_AD14P_66
 #set_property IOSTANDARD  LVCMOS18 [get_ports "FMC_HPC0_LA16_P"] ;# Bank  66 VCCO - VADJ_FMC - IO_L5P_T0U_N8_AD14P_66
 ##set_property PACKAGE_PIN AC9      [get_ports "7N8645"] ;# Bank  66 VCCO - VADJ_FMC - IO_L4N_T0U_N7_DBC_AD7N_66
