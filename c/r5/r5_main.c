@@ -1967,8 +1967,9 @@ void Setup_Analog_Card(void)
 
 void Setup_Digital_Card(void)
   {
-  // only SOFIAIO_SPI has digital I/O, so no #ifdef here
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
   (void)SofiaIO_SPI_DigOUT((u16)0);
+  #endif
   }
 
 
@@ -1976,8 +1977,9 @@ void Setup_Digital_Card(void)
 
 void Analog_Card_DigIN(u16 *ptr)
   {
-  // only SOFIAIO_SPI has digital I/O, so no #ifdef here
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
   (void)SofiaIO_SPI_DigIN(ptr);
+  #endif
   }
 
 
@@ -1985,8 +1987,9 @@ void Analog_Card_DigIN(u16 *ptr)
 
 void Analog_Card_DigOUT(u16 val)
   {
-  // only SOFIAIO_SPI has digital I/O, so no #ifdef here
+  #ifdef ANALOG_CARD_SOFIAIO_SPI
   (void)SofiaIO_SPI_DigOUT(val);
+  #endif
   }
 
 
@@ -2319,15 +2322,15 @@ int main()
   LPRINTF("\n\r*** R5 integrated controller ***\n\r\n\r");
   LPRINTF("This is R5/baremetal side\n\r\n\r");
 
-  LPRINTF("openamp lib version: %s (", openamp_version());
-  LPRINTF("Major: %d, ", openamp_version_major());
-  LPRINTF("Minor: %d, ", openamp_version_minor());
-  LPRINTF("Patch: %d)\n\r", openamp_version_patch());
+  LPRINTF("openamp lib version: %s\n\r", openamp_version());
+  //LPRINTF("( Major: %d, ", openamp_version_major());
+  //LPRINTF("Minor: %d, ", openamp_version_minor());
+  //LPRINTF("Patch: %d)\n\r", openamp_version_patch());
 
-  LPRINTF("libmetal lib version: %s (", metal_ver());
-  LPRINTF("Major: %d, ", metal_ver_major());
-  LPRINTF("Minor: %d, ", metal_ver_minor());
-  LPRINTF("Patch: %d)\n\r", metal_ver_patch());
+  LPRINTF("libmetal lib version: %s\n\r", metal_ver());
+  //LPRINTF("(Major: %d, ", metal_ver_major());
+  //LPRINTF("Minor: %d, ", metal_ver_minor());
+  //LPRINTF("Patch: %d)\n\r", metal_ver_patch());
 
   status = SetupSystem(&gplatform);
   if(status!=XST_SUCCESS)
