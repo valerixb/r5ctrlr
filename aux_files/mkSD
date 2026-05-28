@@ -1,12 +1,9 @@
 #!/bin/bash
 set -x # echo on
-#$ cd /xilinxworks/ZCU102/v2024.2/r5ctrlr/r5ctrlr/hardware/r5ctrlr
-#$ xsct
-#xsct% sdtgen set_dt_param -dir output_dts -xsa design_1_wrapper.xsa -board_dts zcu102-rev1.0
-#xsct% sdtgen generate_sdt
-#xsct% exit
+# cd /xilinxworks/ZCU102/v2025.2/r5ctrlr/r5ctrlr/hardware/r5ctrlr
+# sdtgen -xsa design_1_wrapper.xsa -dir output_sdt -board_dts zcu102-rev1.0
 #
-# petalinux-config --get-hw-description=./hardware/r5ctrlr/output_dts/
+# petalinux-config --get-hw-description=./hardware/r5ctrlr/output_sdt/
 # petalinux-config -c kernel
 # petalinux-config -c rootfs
 # petalinux-build -x mrproper

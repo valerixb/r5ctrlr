@@ -1,4 +1,3 @@
-/include/ "system-conf.dtsi"
 / {
 
 /*
@@ -26,15 +25,15 @@ reserved-memory {
 
 axi {
     /* UIO device node for vring device memory */
-    vring@3ed40000 {
-                   compatible = "vring_uio";
-                   reg = <0x0 0x3ed40000 0x0 0x8000>;
-                   };
+    vring: vring@3ed40000 {
+                          compatible = "vring_uio";
+                          reg = <0x0 0x3ed40000 0x0 0x8000>;
+                          };
     /* Shared memory (APU to RPU) */
-    shm@3ed40000 {
-                 compatible = "shm_uio";
-                 reg = <0x0 0x3ed40000 0x0 0x00040000>;
-                 };
+    shm0: shm@3ed40000 {
+                       compatible = "shm_uio";
+                       reg = <0x0 0x3ed40000 0x0 0x00040000>;
+                       };
     /* IPI device */
     ipi@ff340000 {
                  compatible = "ipi_uio";
