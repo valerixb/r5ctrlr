@@ -18,8 +18,8 @@
 //#define RPMSG_DEBUG
 
 // choose which analog card we have
-//#define ANALOG_CARD_CN0585
-#define ANALOG_CARD_SOFIAIO_SPI
+#define ANALOG_CARD_CN0585
+//#define ANALOG_CARD_SOFIAIO_SPI
 
 
 // ##########  globals  #######################
@@ -1967,9 +1967,8 @@ void Setup_Analog_Card(void)
 
 void Setup_Digital_Card(void)
   {
-  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  // only SOFIAIO_SPI has digital I/O, so no #ifdef here
   (void)SofiaIO_SPI_DigOUT((u16)0);
-  #endif
   }
 
 
@@ -1977,9 +1976,8 @@ void Setup_Digital_Card(void)
 
 void Analog_Card_DigIN(u16 *ptr)
   {
-  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  // only SOFIAIO_SPI has digital I/O, so no #ifdef here
   (void)SofiaIO_SPI_DigIN(ptr);
-  #endif
   }
 
 
@@ -1987,9 +1985,8 @@ void Analog_Card_DigIN(u16 *ptr)
 
 void Analog_Card_DigOUT(u16 val)
   {
-  #ifdef ANALOG_CARD_SOFIAIO_SPI
+  // only SOFIAIO_SPI has digital I/O, so no #ifdef here
   (void)SofiaIO_SPI_DigOUT(val);
-  #endif
   }
 
 
