@@ -18,8 +18,8 @@
 //#define RPMSG_DEBUG
 
 // choose which analog card we have
-//#define ANALOG_CARD_CN0585
-#define ANALOG_CARD_SOFIAIO_SPI
+#define ANALOG_CARD_CN0585
+//#define ANALOG_CARD_SOFIAIO_SPI
 
 
 // ##########  globals  #######################
@@ -2322,15 +2322,15 @@ int main()
   LPRINTF("\n\r*** R5 integrated controller ***\n\r\n\r");
   LPRINTF("This is R5/baremetal side\n\r\n\r");
 
-  LPRINTF("openamp lib version: %s (", openamp_version());
-  LPRINTF("Major: %d, ", openamp_version_major());
-  LPRINTF("Minor: %d, ", openamp_version_minor());
-  LPRINTF("Patch: %d)\n\r", openamp_version_patch());
+  LPRINTF("openamp lib version: %s\n\r", openamp_version());
+  //LPRINTF("( Major: %d, ", openamp_version_major());
+  //LPRINTF("Minor: %d, ", openamp_version_minor());
+  //LPRINTF("Patch: %d)\n\r", openamp_version_patch());
 
-  LPRINTF("libmetal lib version: %s (", metal_ver());
-  LPRINTF("Major: %d, ", metal_ver_major());
-  LPRINTF("Minor: %d, ", metal_ver_minor());
-  LPRINTF("Patch: %d)\n\r", metal_ver_patch());
+  LPRINTF("libmetal lib version: %s\n\r", metal_ver());
+  //LPRINTF("(Major: %d, ", metal_ver_major());
+  //LPRINTF("Minor: %d, ", metal_ver_minor());
+  //LPRINTF("Patch: %d)\n\r", metal_ver_patch());
 
   status = SetupSystem(&gplatform);
   if(status!=XST_SUCCESS)

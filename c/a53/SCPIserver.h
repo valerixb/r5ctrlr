@@ -46,8 +46,8 @@
 #define SCPI_NO_ERR    0
 #define SCPI_GEN_ERR  -1
 
-#define PRODUCT_FNAME "/etc/petalinux/product"
-#define VERSION_FNAME "/etc/petalinux/version"
+#define PRODUCT_FNAME "/etc/maxiv/product"
+#define VERSION_FNAME "/etc/maxiv/version"
 
 #define FILTERTYPE_PID   1
 #define FILTERTYPE_IIR   2
