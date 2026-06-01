@@ -1,5 +1,5 @@
 #
-# This recipe replace standard apache configuration file
+# This recipe replaces standard apache configuration file
 # /etc/apache2/httpd.conf
 # with a version that enables cgi
 #
