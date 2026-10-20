@@ -10,12 +10,12 @@ sudo bmaptool create \
   -o tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
   tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
 # now write image to SD
-umount /dev/sdb1
-umount /dev/sdb2
-umount /dev/sdb3
-umount /dev/sdb4
+umount /dev/sde1
+umount /dev/sde2
+umount /dev/sde3
+umount /dev/sde4
 sudo bmaptool copy \
   tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic \
-  /dev/sdb
+  /dev/sde
 #duration=$SECONDS
 #TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"

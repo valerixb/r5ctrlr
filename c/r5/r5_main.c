@@ -68,8 +68,8 @@ XScuGic interruptController;
 static XScuGic_Config *gicConfig;
 unsigned long int irq_cntr[4];
 unsigned long last_irq_cnt;
-XGpio theGpio;
-static XGpio_Config *gpioConfig;
+//XGpio theGpio;
+//static XGpio_Config *gpioConfig;
 XTmrCtr theTimer;
 static XTmrCtr_Config *gTimerConfig;
 float gTimerIRQlatency, gMaxLatency;
@@ -1508,7 +1508,7 @@ void RegbankISR(void *callbackRef)
 
 
 // -----------------------------------------------------------
-
+/*
 void GpioISR(void *callbackRef)
   {
   XGpio *gpioPtr = (XGpio *)callbackRef;
@@ -1520,7 +1520,7 @@ void GpioISR(void *callbackRef)
 
   XGpio_InterruptClear(gpioPtr, GPIO_BUTTON_IRQ_MASK);
   }
-
+*/
 
 // -----------------------------------------------------------
 
@@ -1663,6 +1663,7 @@ int SetupIRQs(void)
 
 
   // Setup AXI GPIO IRQs ---------------------------------
+  /*
   // register ISR
   status=XScuGic_Connect(&interruptController, INTC_AXIGPIO_IRQ_ID,
                          (Xil_ExceptionHandler)GpioISR,
@@ -1679,7 +1680,7 @@ int SetupIRQs(void)
   XScuGic_Enable(&interruptController, INTC_AXIGPIO_IRQ_ID);
   XGpio_InterruptEnable(&theGpio, GPIO_BUTTON_IRQ_MASK);
   XGpio_InterruptGlobalEnable(&theGpio);
-
+  */
 
   // Setup AXI timer IRQs ---------------------------------
   // register it as a FIQ; in Vivado prj, the timer IRQ line
@@ -1742,11 +1743,13 @@ int CleanupIRQs(void)
   XScuGic_Disconnect(&interruptController, INTC_REGBANK_IRQ_ID);
 
   // Cleanup AXI GPIO IRQs ---------------------------------
+  /*
   XGpio_InterruptGlobalDisable(&theGpio);
   XGpio_InterruptDisable(&theGpio, GPIO_BUTTON_IRQ_MASK);
   XScuGic_Disable(&interruptController, INTC_AXIGPIO_IRQ_ID);
   XScuGic_Disconnect(&interruptController, INTC_AXIGPIO_IRQ_ID);
-
+  */
+  
   // Cleanup AXI timer IRQs ---------------------------------
   XTmrCtr_Stop(&theTimer, TIMER_NUMBER);
   XScuGic_Disable(&interruptController, INTC_TIMER_IRQ_ID);
@@ -1757,16 +1760,18 @@ int CleanupIRQs(void)
 
 
 // -----------------------------------------------------------
-
+/*
 int SetupAXIGPIO(void)
   {
   int status;
   
   // you can use the base address to lookup the config even if the documentation talks of ID
+  
   gpioConfig=XGpio_LookupConfig(PL_GPIO_BADDR);
   if(NULL==gpioConfig) 
     return XST_FAILURE;
-
+  
+  
   status=XGpio_CfgInitialize(&theGpio, gpioConfig, gpioConfig->BaseAddress);
   if (status!=XST_SUCCESS)
     return XST_FAILURE;
@@ -1777,7 +1782,7 @@ int SetupAXIGPIO(void)
 
   return XST_SUCCESS;
   }
-
+*/
 
 // -----------------------------------------------------------
 
@@ -2053,10 +2058,12 @@ int SetupSystem(void **platformp)
   SetupExceptions();
 
   // setup PL stuff
+  /*
   status = SetupAXIGPIO();
   if(status!=XST_SUCCESS)
     return XST_FAILURE;
-
+  */
+  
   status = SetupAXItimer();
   if(status!=XST_SUCCESS)
     return XST_FAILURE;

@@ -5,12 +5,12 @@ serial@ff010000 {
                 status = "disabled";
                 };
 */
-
+/*
 aliases {
                 /delete-property/ serial1;
                 /delete-property/ spi1;
         };
-
+*/
 reserved-memory {
                 #address-cells = <2>;
                 #size-cells = <2>;
@@ -55,19 +55,19 @@ axi {
 
 /delete-node/ &uart1;
 
-/delete-node/ &max7301_spi_0;
-/delete-node/ &AD3552_SPI_A;
-/delete-node/ &AD3552_SPI_B;
+/delete-node/ &PL_max7301_spi_0;
+/delete-node/ &PL_AD3552_SPI_A;
+/delete-node/ &PL_AD3552_SPI_B;
 
+/delete-node/ &PL_axi_timer_0;
+/delete-node/ &PL_regbank_0;
+/delete-node/ &PL_r5_sleep_timer_0;
+
+/*
+/delete-node/ &axi_gpio_0;
 /delete-node/ &SofiaIO_gpio;
 /delete-node/ &SofiaIO_spi;
 
-/delete-node/ &axi_gpio_0;
-/delete-node/ &axi_timer_0;
-/delete-node/ &regbank_0;
-/delete-node/ &r5_sleep_timer_0;
-
-/*
 &axi_gpio_0 {
             /delete-property/ interrupt-controller ;
             /delete-property/ interrupt-names ;
@@ -91,3 +91,4 @@ axi {
              status = "disabled";
              };
 */
+
