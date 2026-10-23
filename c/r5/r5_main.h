@@ -33,7 +33,7 @@
 #include "xil_exception.h"
 #include "xplatform_info.h"
 #include "platform.h"
-// #include "xgpio.h"
+#include "xgpio.h"
 #include "xtmrctr.h"
 #include <openamp/version.h>
 #include <metal/version.h>
@@ -66,10 +66,10 @@
 #define INTC_REGBANK_IRQ_ID   XPS_FPGA2_INT_ID
 // PL regbank has base address 0x8002_0000,  which is XPAR_REGBANK_0_BASEADDR in xparameters.h
 #define REGBANK               (volatile unsigned int *)(XPAR_REGBANK_0_BASEADDR)
-// PL_GPIO base address is 0x8001_0000, which is XPAR_AXI_GPIO_0_BASEADDR in xparameters.h
-//#define PL_GPIO_BADDR XPAR_AXI_GPIO_0_BASEADDR
-// buttons are on GPIO channel 1, LEDs on channel 2; enable IRQ for channel 1
-//#define GPIO_BUTTON_IRQ_MASK  XGPIO_IR_CH1_MASK
+// PL GPIO base address is 0x8001_0000, which is XPAR_PL_AXI_GPIO_0_BASEADDR in xparameters.h
+#define PL_GPIO_BADDR XPAR_PL_AXI_GPIO_0_BASEADDR
+// the button is on GPIO channel 1; enable IRQ for channel 1
+#define GPIO_BUTTON_IRQ_MASK  XGPIO_IR_CH1_MASK
 // AXI timer ID is 0, even if it's not defined in xparameters.h
 #define TIMER_DEVICE_ID        0
 // AXI timer has 2 timers; we only use the first one, timer#0
@@ -108,11 +108,11 @@ static void rpmsg_service_unbind(struct rpmsg_endpoint *ept);
 void LocalAbortHandler(void *callbackRef);
 void LocalUndefinedHandler(void *callbackRef);
 void RegbankISR(void *CallbackRef);
-//void GpioISR(void *CallbackRef);
+void GpioISR(void *CallbackRef);
 //static void TimerISR(void *callbackRef, u8 timer_num);
 void FiqHandler(void *cb) __attribute__((section(".tcmb_text")));
 static inline double GetTimer_us(void);
-//int SetupAXIGPIO(void);
+int SetupAXIGPIO(void);
 void SetSamplingFreq(u32 f);
 int SetupAXItimer(void);
 int SetupIRQs(void);

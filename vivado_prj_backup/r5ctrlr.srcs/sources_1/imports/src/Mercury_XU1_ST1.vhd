@@ -292,6 +292,7 @@ architecture rtl of Mercury_XU1_ST1 is
       adc_DB_p            : in     std_logic_vector(3 downto 0);
       adc_DB_n            : in     std_logic_vector(3 downto 0);
       FMC_LA13_P          : in     std_logic;
+      BTN1_N              : in     std_logic;
 
       FMC_LA10_P          : out    std_logic;
       FMC_LA10_N          : out    std_logic;
@@ -327,7 +328,7 @@ architecture rtl of Mercury_XU1_ST1 is
   signal IIC_FPGA_scl_o   : std_logic;
   signal IIC_FPGA_scl_t   : std_logic;
   signal dp_aux_data_oe_n : std_logic;
-  signal LedCount         : unsigned(24 downto 0);
+  signal LedCount         : unsigned(25 downto 0);
 
   
   ----------------------------------------------------------------------------------------------------
@@ -359,6 +360,7 @@ begin
       adc_DB_p             => adc_DB_p,
       adc_DB_n             => adc_DB_n,
       FMC_LA13_P           => FMC_LA13_P,
+      BTN1_N               => BTN1_N,
 
       FMC_LA10_P           => FMC_LA10_P,
       FMC_LA10_N           => FMC_LA10_N,
