@@ -2,19 +2,19 @@ OBJ_LOCAL = r5_main.o cn0585_gpio.o cn0585_dac.o cn0585_adc.o doubledsplib.o
 COMMON_DIR = ../common
 OBJ_COMMON = platform.o rproc.o rsc_table.o sample_shmem.o 
 TARGET = R5app.elf
-PLATFORM_PATH = ../../../vitis-workspace/XU1ST1
+PLATFORM_PATH = ../../../vitis-workspace/r5ctrlr_platform
 
 CC = /tools/Xilinx/2025.2/Vitis/gnu/armr5/lin/gcc-arm-none-eabi/bin/armr5-none-eabi-gcc
 CFLAGS = -O0 -g3 -Wall -I../common \
-         -I$(PLATFORM_PATH)/export/XU1ST1/sw/R5_0/include \
-         -isystem $(PLATFORM_PATH)/export/XU1ST1/sw/R5_0/include \
+         -I$(PLATFORM_PATH)/export/r5ctrlr_platform/sw/R5_0_baremetal/include \
+         -isystem $(PLATFORM_PATH)/export/r5ctrlr_platform/sw/R5_0_baremetal/include \
          -isystem /tools/Xilinx/2025.2/Vitis/gnu/armr5/lin/gcc-arm-none-eabi/x86_64-oesdk-linux/usr/lib/arm-xilinx-eabi/gcc/arm-xilinx-eabi/13.3.0/include \
          -isystem /tools/Xilinx/2025.2/Vitis/gnu/armr5/lin/gcc-arm-none-eabi/x86_64-oesdk-linux/usr/lib/arm-xilinx-eabi/gcc/arm-xilinx-eabi/13.3.0/include-fixed \
          -isystem /tools/Xilinx/2025.2/Vitis/gnu/armr5/lin/gcc-arm-none-eabi/armrm-xilinx-eabi/usr/include \
          -DXLNX_PLATFORM -D__BAREMETAL__ -DSDT -mcpu=cortex-r5 -mfloat-abi=hard -mfpu=vfpv3-d16 -DARMR5
 LDFLAGS = -Wall \
           -DSDT -mcpu=cortex-r5 -DARMR5 -mfloat-abi=hard -mfpu=vfpv3-d16 \
-          -L$(PLATFORM_PATH)/export/XU1ST1/sw/R5_0/lib \
+          -L$(PLATFORM_PATH)/export/r5ctrlr_platform/sw/R5_0_baremetal/lib \
           -Wl,-T -Wl,"lscript.ld" \
           -Wl,--start-group,-lxilstandalone  -lxiltimer  -lmetal  -lopen_amp  -lm  -lxil  -lgcc  -lc  -lm  -Wl,--end-group \
           -lxil  -lgcc  -lc \
