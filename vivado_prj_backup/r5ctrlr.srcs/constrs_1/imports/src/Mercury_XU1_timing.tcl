@@ -18,4 +18,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # PRODUCT OR THE USE OR OTHER DEALINGS IN THE PRODUCT.
 # ----------------------------------------------------------------------------------------------------
+
+# NOTE! this file must not be applied to synthesis, but only to implementation and simulation 
+
 set_false_path -from [get_clocks clk_pl_0] -to [get_ports {LED2_N_PWR_SYNC}]
