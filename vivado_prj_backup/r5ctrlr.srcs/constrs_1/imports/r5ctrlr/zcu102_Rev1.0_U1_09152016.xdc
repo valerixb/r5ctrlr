@@ -203,8 +203,8 @@ set_property IOSTANDARD  LVCMOS33 [get_ports "PMOD1_7"] ;# Bank  47 VCCO - VCC3V
 #set_property IOSTANDARD  LVCMOS33 [get_ports "PL_I2C1_SCL_LS"] ;# Bank  47 VCCO - VCC3V3   - IO_L1N_AD11N_47
 #set_property PACKAGE_PIN L20      [get_ports "PL_I2C1_SDA_LS"] ;# Bank  47 VCCO - VCC3V3   - IO_L1P_AD11P_47
 #set_property IOSTANDARD  LVCMOS33 [get_ports "PL_I2C1_SDA_LS"] ;# Bank  47 VCCO - VCC3V3   - IO_L1P_AD11P_47
-#set_property PACKAGE_PIN AE14     [get_ports "GPIO_SW_E"] ;# Bank  44 VCCO - VCC3V3   - IO_L12N_AD0N_44
-#set_property IOSTANDARD  LVCMOS33 [get_ports "GPIO_SW_E"] ;# Bank  44 VCCO - VCC3V3   - IO_L12N_AD0N_44
+set_property PACKAGE_PIN AE14     [get_ports "GPIO_SW_E"] ;# Bank  44 VCCO - VCC3V3   - IO_L12N_AD0N_44
+set_property IOSTANDARD  LVCMOS33 [get_ports "GPIO_SW_E"] ;# Bank  44 VCCO - VCC3V3   - IO_L12N_AD0N_44
 #set_property PACKAGE_PIN AE15     [get_ports "GPIO_SW_S"] ;# Bank  44 VCCO - VCC3V3   - IO_L12P_AD0P_44
 #set_property IOSTANDARD  LVCMOS33 [get_ports "GPIO_SW_S"] ;# Bank  44 VCCO - VCC3V3   - IO_L12P_AD0P_44
 #set_property PACKAGE_PIN AG15     [get_ports "GPIO_SW_N"] ;# Bank  44 VCCO - VCC3V3   - IO_L11N_AD1N_44
