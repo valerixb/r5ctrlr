@@ -22,10 +22,10 @@
 // In the PL there are two instances of our custom AD3552 SPI IP, 
 // one for each DAC on ADI CN0585 board
 // Here I define convenient constants based on the ones defined by the platform in xparameters.h
-// AD3552 instance 1 has base address 0x8004_0000,  which is XPAR_AD3552_SPI_0_BASEADDR in xparameters.h
+// AD3552 instance 1 has base address 0x8004_0000,  which is XPAR_PL_AD3552_SPI_A_BASEADDR in xparameters.h
 #define NUM_DACS        2
-#define DAC_A_BADDR     XPAR_AD3552_SPI_A_BASEADDR
-#define DAC_B_BADDR     XPAR_AD3552_SPI_B_BASEADDR
+#define DAC_A_BADDR     XPAR_PL_AD3552_SPI_A_BASEADDR
+#define DAC_B_BADDR     XPAR_PL_AD3552_SPI_B_BASEADDR
 
 #define MAX_READ_RETRIES     10
 #define RESET_WAIT          10000UL

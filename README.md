@@ -195,7 +195,7 @@ file/new component/platform
 Call the platform "r5ctrlr_platform"; it's important to use the right platform and domain names, as they are referenced in the makefiles for the standalone compilation flow.
 
 Start adding a R5#0/baremetal domain called "R5_0_baremetal"; add to it `libmetal` and `openamp`. 
-In the R5 BSP, assign UART1 as stdin/stout, instead of the default UART0. In addition, set the timer to `r5_sleep_timer_0` instead of the default (which is used as sampling timer instead).
+In the R5 BSP, assign UART1 as stdin/stout, instead of the default UART0. In addition, set the timer to `PL_r5_sleep_timer_0` instead of the default (which is used as sampling timer instead).
 
 Regenerate the BSP
 
