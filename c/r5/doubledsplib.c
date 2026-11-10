@@ -57,7 +57,16 @@ double MISO(double *x, float *a, float *b, int dim)
     num=num+(*(a+i+1))*(*(x+i));
     den=den+(*(b+i+1))*(*(x+i));
     }
-  return (num/den);
+  // check for division by zero
+  if(fabs(den)>EPS)
+    return (num/den);
+  else
+    // check signs watching out for corner cases 
+    // (i.e check num and den separately)
+    if(((num>0)&&(den<0)) ||((num<0)&&(den>0)))
+      return(-BIG_NUMBER);
+    else
+      return(BIG_NUMBER);
   }
 
 
