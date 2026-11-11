@@ -54,8 +54,8 @@ proc checkRequiredFiles { origin_dir} {
   }
 
   set files [list \
- "[file normalize "$origin_dir/../gitcode/hdl/pipe3.vhd"]"\
- "[file normalize "$origin_dir/../gitcode/hdl/debouncer.vhd"]"\
+ "[file normalize "$origin_dir/../../gitcode/hdl/pipe3.vhd"]"\
+ "[file normalize "$origin_dir/../../gitcode/hdl/debouncer.vhd"]"\
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -65,7 +65,7 @@ proc checkRequiredFiles { origin_dir} {
   }
 
   set paths [list \
- "[file normalize "$origin_dir/[file normalize "$origin_dir/ip_repo"]"]"\
+ "[file normalize "$origin_dir/[file normalize "$origin_dir/../ip_repo"]"]"\
   ]
   foreach ipath $paths {
     if { ![file isdirectory $ipath] } {
@@ -239,7 +239,7 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 # Set IP repository paths
 set obj [get_filesets sources_1]
 if { $obj != {} } {
-   set_property "ip_repo_paths" "[file normalize "$origin_dir/ip_repo"]" $obj
+   set_property "ip_repo_paths" "[file normalize "$origin_dir/../ip_repo"]" $obj
 
    # Rebuild user ip_repo's index before adding any source files
    update_ip_catalog -rebuild
@@ -248,8 +248,8 @@ if { $obj != {} } {
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 set files [list \
- [file normalize "${origin_dir}/../gitcode/hdl/pipe3.vhd"] \
- [file normalize "${origin_dir}/../gitcode/hdl/debouncer.vhd"] \
+ [file normalize "${origin_dir}/../../gitcode/hdl/pipe3.vhd"] \
+ [file normalize "${origin_dir}/../../gitcode/hdl/debouncer.vhd"] \
 ]
 add_files -norecurse -fileset $obj $files
 
@@ -263,7 +263,7 @@ foreach f $files {
 }
 
 # Set 'sources_1' fileset file properties for remote files
-set file "$origin_dir/../gitcode/hdl/pipe3.vhd"
+set file "$origin_dir/../../gitcode/hdl/pipe3.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
@@ -275,7 +275,7 @@ set_property -name "used_in" -value "synthesis simulation" -objects $file_obj
 set_property -name "used_in_simulation" -value "1" -objects $file_obj
 set_property -name "used_in_synthesis" -value "1" -objects $file_obj
 
-set file "$origin_dir/../gitcode/hdl/debouncer.vhd"
+set file "$origin_dir/../../gitcode/hdl/debouncer.vhd"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
@@ -505,10 +505,10 @@ set_property -name "name" -value "utils_1" -objects $obj
 
 # Adding sources referenced in BDs, if not already added
 if { [get_files [list pipe3.vhd]] == "" } {
-  import_files -quiet -fileset sources_1 /xilinxworks/enclustra-XU1/r5ctrlr-xu1st1/gitcode/hdl/pipe3.vhd
+  import_files -quiet -fileset sources_1 "$origin_dir/../../gitcode/hdl/pipe3.vhd"
 }
 if { [get_files [list debouncer.vhd]] == "" } {
-  import_files -quiet -fileset sources_1 /xilinxworks/enclustra-XU1/r5ctrlr-xu1st1/gitcode/hdl/debouncer.vhd
+  import_files -quiet -fileset sources_1 "$origin_dir/../../gitcode/hdl/debouncer.vhd"
 }
 
 
