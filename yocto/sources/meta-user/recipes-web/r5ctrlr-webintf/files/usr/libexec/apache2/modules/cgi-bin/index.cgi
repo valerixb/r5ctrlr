@@ -70,15 +70,7 @@ for name in arguments.keys():
 # --------------------  now display html page  -----------------------
 
 print('')
-print('Beamline pages:<br>')
-print('<ul>')
-print('<li><a href="/cgi-bin/balder.cgi">Balder Monochromator Control</a></li>')
-print('</ul>')
-
-print('<br><br>')
-
-print('')
-print('Commissioning pages:<br>')
+print('Available pages:<br>')
 print('<ul>')
 print('<li><a href="/cgi-bin/r5bode.cgi">Bode facility</a></li>')
 print('<li><a href="/cgi-bin/r5wgen.cgi">Waveform Generator facility</a></li>')

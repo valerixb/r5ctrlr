@@ -1,7 +1,7 @@
 
 <!-- TOC --><a name="r5ctrlr"></a>
 # r5ctrlr
-C and HDL code for a controller which integrates programmable logic (Xilinx Zynq Ultrascale+ FPGA PL), realtime processor (baremetal R5) and linux (on A53). Version for [Xilinx ZCU102](https://www.amd.com/en/products/adaptive-socs-and-fpgas/evaluation-boards/ek-u1-zcu102-g.html)
+C and HDL code for a controller which integrates programmable logic (Xilinx Zynq Ultrascale+ FPGA PL), realtime processor (baremetal R5) and linux (on A53). Version for [Enclustra Mercury+ XU1 (ME-XU1-6EG-1I-D11E)](https://www.enclustra.com/en/products/system-on-chip-modules/mercury-xu1/) with [baseboard ST1](https://www.enclustra.com/en/products/base-boards/mercury-st1/).
 
 <!-- TOC --><a name="contents"></a>
 # Contents
@@ -45,11 +45,13 @@ This directory can be moved to any location, but the source reference to the git
 
 <!-- TOC --><a name="clone-git-directory"></a>
 ## Clone git directory
-When you clone a remote git repo to your local directory, it takes the name of the repo; we will then rename it to "gitcode" for clarity:
+When you clone a remote git repo to your local directory, it takes the name of the repo; we will then rename it to "gitcode" for clarity; then we select the branch corresponding to our board:
 ```
 cd <base dir>
 git clone git@github.com:valerixb/r5ctrlr.git
 mv r5ctrlr gitcode
+cd gitcode
+git checkout xu1st1-develop
 ```
 
 <!-- TOC --><a name="setup-vivado-project"></a>
@@ -62,6 +64,7 @@ source ./r5ctrlr.tcl
 This reconstruct all the project. Save and exit Vivado. In your `vivado-prj` directory, Vivado created a `r5ctrlr` subdirectory; move all its content into the parent dir (`vivado-prj`), saying YES when prompted to merge directories and overwrite files. Then remove the now empty `r5ctrlr` directory. Open Vivado again and build the bitfile.
 
 Note that Vivado project directory can be moved, as it does not contain absolute paths (but check the links to hdl files that you put in the IPs). 
+ 
 
 
 <!-- TOC --><a name="setup-yocto"></a>
@@ -86,7 +89,16 @@ Export .xsa from vivado (include bitstream, but do not include binary, which is 
 Generate system device tree:
 ```
 cd <base dir>/vivado-prj
-sdtgen -xsa design_1_wrapper.xsa -dir output_sdt -board_dts zcu102-rev1.0
+sdtgen -xsa Mercury_XU1_ST1.xsa \
+       -dir output_sdt \
+       -user_dts "../yocto-prj/sources/meta-user/recipes-bsp/device-tree/files/enclustra_xu1st1.dtsi"
+```
+A warning is generated, but it can be safely ignored:
+```
+WARNING: CONFIG.PSU__PSS_REF_CLK__FREQMHZ not found. Using default value for XPAR_PSU_PSS_REF_CLK_FREQ_HZ.
+```
+Now switch to the yocto side:
+```
 cd <base dir>/yocto-prj
 source edf-init-build-env
 ```
@@ -140,7 +152,13 @@ This will partition the SD and copy all the necessary files (it takes some time)
 
 <!-- TOC --><a name="serial-ttys"></a>
 #### Serial TTYs
-Linux uses UART0 and R5 uses UART1 as serial consoles; they are both accessible from a single micro-USB connector on ZCU102 (along with other two serial ports in which we are not interested here).
+Linux uses UART0 on the ST1 micro USB connector, once the onboard FTDI chip has been properly configured using Enclustra MCT utility; for more details see [Enclustra XU1+ST1 reference design instructions](https://github.com/enclustra/Mercury_XU1_ST1_Reference_Design/blob/master/doc/Mercury_XU1_ST1.pdf).
+On the other hand, the R5 processor uses UART1, which has been connected in Vivado to PS MIO 40 and 41, which are routed on IO4 connector (pin 1 and 3) on ST1 baseboard; please note that IO levels are 1.8V even if the IO4 connector provides a 3.3V rail. A suitable serial to USB converter can be used to connect to a PC, for example FTDI cable with P/N "TTL-232RG-VREG1V8-WE"; it must be connected in null modem configuration:
+
+* PS UART1 TXD = MIO 40 = ST1 IO4 connector pin 1 (1.8V even if the connector has a 3.3V supply pin) = FTDI RX
+* PS UART1 RXD = MIO 41 = ST1 IO4 connector pin 3 (1.8V even if the connector has a 3.3V supply pin) = FTDI TX
+* GND = ST1 IO4 connector pin 9 = FTDI GND
+
 
 
 <!-- TOC --><a name="script-for-additional-boot-configuration"></a>
@@ -170,6 +188,7 @@ Note that the SDK is for A53/linux only; the libraries necessary to cross compil
 To cross compile applications for A53/linux and R5/baremetal it is possible to follow to ways:
 - Vitis environment
 - standard workflow from command line with the provided makefiles
+
 As editor it's convenient to use visual studio code in both cases.
 Vitis debugger is a useful tool, as it can download, run and debug the applications (with step execution, breakpoints and all that) for both processors.
 

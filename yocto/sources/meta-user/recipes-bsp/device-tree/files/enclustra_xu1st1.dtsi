@@ -1,0 +1,117 @@
+#include "include/dt-bindings/phy/phy.h"
+
+/ {
+	model = "Enclustra ZynqMP SOM";
+};
+
+&sdhci0 {
+	non-removable;
+	disable-wp;
+	bus-width = <8>;
+};
+
+&gem0 {
+	/delete-property/ local-mac-address;
+	phy-mode = "rgmii-id";
+	phy-handle = <&phy0>;
+
+	mdio {
+		phy0: phy@3 {
+			reg = <3>;
+
+			txc-skew-ps = <1800>;
+			txen-skew-ps = <420>;
+
+			txd0-skew-ps = <420>;
+			txd1-skew-ps = <420>;
+			txd2-skew-ps = <420>;
+			txd3-skew-ps = <420>;
+
+			rxc-skew-ps = <900>;
+			rxdv-skew-ps = <420>;
+
+			rxd0-skew-ps = <420>;
+			rxd1-skew-ps = <420>;
+			rxd2-skew-ps = <420>;
+			rxd3-skew-ps = <420>;		
+		};
+		phy1: phy@7 {
+			reg = <7>;
+
+			txc-skew-ps = <1800>;
+			txen-skew-ps = <420>;
+
+			txd0-skew-ps = <420>;
+			txd1-skew-ps = <420>;
+			txd2-skew-ps = <420>;
+			txd3-skew-ps = <420>;
+
+			rxc-skew-ps = <900>;
+			rxdv-skew-ps = <420>;
+
+			rxd0-skew-ps = <420>;
+			rxd1-skew-ps = <420>;
+			rxd2-skew-ps = <420>;
+			rxd3-skew-ps = <420>;		
+		};
+	};
+};
+
+&gem3 {
+	/delete-property/ local-mac-address;
+	phy-handle = <&phy1>;
+	phy-mode = "rgmii-id";
+};
+
+&qspi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	is-dual = <0>;
+	num-cs = <1>;
+	flash0: flash@0 {
+		reg = <0x0>;
+		compatible = "spansion,s25fl512s", "jedec,spi-nor";
+		spi-rx-bus-width = <0x4>;
+		spi-tx-bus-width = <0x4>;
+		spi-max-frequency = <50000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&psgtr {
+	clocks = <&ref100>, <&ref27>;
+	clock-names = "ref2", "ref3";
+};
+
+&i2c0 {
+		clock-frequency = <100000>;
+		atsha204a@64 {
+			compatible = "atmel,atsha204a";
+			reg = <0x64>;
+		};
+};
+
+&dwc3_0 {
+	dr_mode = "host";
+	snps,usb3_lpm_capable;
+	phy-names = "usb3-phy";
+	phys = <&psgtr 2 PHY_TYPE_USB3 0 2>;
+	maximum-speed = "super-speed";
+};
+
+&dwc3_1 {
+	dr_mode = "host";
+	snps,usb3_lpm_capable;
+	phy-names = "usb3-phy";
+	phys = <&psgtr 3 PHY_TYPE_USB3 1 2>;
+	maximum-speed = "super-speed";
+};
+
+/* SD1 with level shifter */
+&sdhci1 {
+	no-1-8-v;	/* for 1.0 silicon */
+	wp-inverted;
+	xlnx,mio_bank = <1>;
+};
+
