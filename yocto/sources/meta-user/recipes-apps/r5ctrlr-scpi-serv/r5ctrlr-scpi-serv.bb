@@ -14,6 +14,7 @@ SRC_URI = \
      file://r5ctrlr-scpi-serv-init \
      file://r5ctrlr-scpi-serv.service \
      file://scpi.conf \
+     file://scpi-balder.conf \
     "
 
 S = "${WORKDIR}"
@@ -43,7 +44,9 @@ do_install() {
         install -d ${D}${systemd_system_unitdir}
         install -m 0644 ${WORKDIR}/r5ctrlr-scpi-serv.service ${D}${systemd_system_unitdir}
         install -m 0644 ${WORKDIR}/scpi.conf ${D}${sysconfdir}
+        install -m 0644 ${WORKDIR}/scpi-balder.conf ${D}${sysconfdir}
 }
 
 FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES','sysvinit','${sysconfdir}/*', '', d)}"
 FILES:${PN} += "${sysconfdir}/scpi.conf"
+FILES:${PN} += "${sysconfdir}/scpi-balder.conf"

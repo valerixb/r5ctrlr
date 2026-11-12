@@ -5,12 +5,12 @@ serial@ff010000 {
                 status = "disabled";
                 };
 */
-/*
+
 aliases {
                 /delete-property/ serial1;
                 /delete-property/ spi1;
         };
-*/
+
 reserved-memory {
                 #address-cells = <2>;
                 #size-cells = <2>;

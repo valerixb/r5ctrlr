@@ -3,7 +3,7 @@ set -x # echo on
 SECONDS=0
 # make clean
 MACHINE=r5ctrlr-xu1st1 bitbake xilinx-bootbin -c cleanall
-MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -c cleanall
+MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -r ./conf/xu1st1-override.conf -c cleanall
 rm -rf ./sstate-cache
 rm -rf ./tmp
 rm -rf ./tmp-r5ctrlr-xu1st1-cortexa53-fsbl
@@ -11,7 +11,7 @@ rm -rf ./tmp-r5ctrlr-xu1st1-cortexr5-0-baremetal
 rm -rf ./tmp-r5ctrlr-xu1st1-microblaze-pmu
 #rebuild
 MACHINE=r5ctrlr-xu1st1 bitbake xilinx-bootbin
-MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image
+MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -r ./conf/xu1st1-override.conf
 # add boot.bin to image EFI partition
 wic cp \
  tmp/deploy/images/r5ctrlr-xu1st1/boot.bin \

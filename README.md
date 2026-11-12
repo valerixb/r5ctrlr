@@ -136,7 +136,7 @@ sdtgen -xsa design_1_wrapper.xsa \
 cd <base dir>/vivado-prj/enclustra-xu1st1
 sdtgen -xsa Mercury_XU1_ST1.xsa \
        -dir output_sdt \
-       -user_dts "../../yocto-prj/sources/meta-user/recipes-bsp/device-tree/files/enclustra_xu1st1.dtsi"
+       -user_dts "../../yocto-prj/sources/meta-user/recipes-bsp/device-tree/files/xu1st1/enclustra_xu1st1.dtsi"
 ```
 A warning is generated, but it can be safely ignored:
 ```
