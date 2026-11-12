@@ -20,11 +20,13 @@ Two FPGA cards are supported:
    * [Setup Vivado project](#setup-vivado-project)
    * [Setup yocto](#setup-yocto)
       + [Init repo using xilinx edf manifest](#init-repo-using-xilinx-edf-manifest)
+      + [Import custom distro configuration](#import-custom-distro-configuration)
       + [Export Vivado project into a System Device Tree](#export-vivado-project-into-a-system-device-tree)
         - [SDT for ZCU102](#sdt-for-zcu102)
         - [SDT for Enclustra XU1+ST1](#sdt-for-enclustra-xu1+st1)
       + [Import Vivado project into a Yocto Layer](#import-vivado-project-into-a-layer)
-      + [Import custom distro configuration](#import-custom-distro-configuration)
+        - [SDT import commands for ZCU102](#sdt-import-commands-for-zcu102)
+        - [SDT import commands for Enclustra XU1+ST1](#sdt-import-commands-for-enclustra-xu1+st1)
       + [Build linux image](#build-linux-image)
       + [Make an SD card from the compiled image](#make-an-sd-card-from-the-compiled-image)
         - [Serial TTYs](#serial-ttys)
@@ -101,6 +103,14 @@ source edf-init-build-env
 ```
 Note that the script performs an automatic `cd ./build`, so your shell is now in build subdirectory. From now on it is assumed that the `edf-init-build-env` has been sourced.
 
+
+<!-- TOC --><a name="import-custom-distro-configuration"></a>
+### Import custom distro configuration
+All the yocto customizations for MaxIV and r5ctrlr project in particular are defined in a custom distro called "maxiv".
+Just copy (merge) the content of the directory `<base dir>/gitcode/yocto` into `<base dir>/yocto-prj`. It's mainly a simple customization of `<base dir>/build/conf` files plus the addition of a new `meta-user` layer that does all the work. Note that this layer also includes the SCPI server, R5 executable and web pages. Some useful shell scripts are also added to the build directory to automate common yocto procedures (build, configure, make a SD card from the image).
+Finally, a `meta-vivadoprj` layer is also added, which is were info about the Vivado PL and PS project will be passed to yocto.
+
+
 <!-- TOC --><a name="export-vivado-project-into-a-system-device-tree"></a>
 ### Export Vivado project into a System Device Tree
 Go into each of the board-specific directory of the vivado project, namely:
@@ -126,7 +136,7 @@ sdtgen -xsa design_1_wrapper.xsa \
 cd <base dir>/vivado-prj/enclustra-xu1st1
 sdtgen -xsa Mercury_XU1_ST1.xsa \
        -dir output_sdt \
-       -user_dts "../yocto-prj/sources/meta-user/recipes-bsp/device-tree/files/enclustra_xu1st1.dtsi"
+       -user_dts "../../yocto-prj/sources/meta-user/recipes-bsp/device-tree/files/enclustra_xu1st1.dtsi"
 ```
 A warning is generated, but it can be safely ignored:
 ```
@@ -135,34 +145,40 @@ WARNING: CONFIG.PSU__PSS_REF_CLK__FREQMHZ not found. Using default value for XPA
 
 <!-- TOC --><a name="import-vivado-project-into-a-layer"></a>
 ### Import Vivado project into a Yocto Layer
-Export .xsa from vivado (include bitstream, but do not include binary, which is the format used for dynamic PL reconfig)
-Generate system device tree:
-Now switch to the yocto side:
+The previously generated SDT (=vivado design) is now imported into yocto `meta-vivadoprj` layer invoking the command `gen-machine-conf`; this must be done for all the supported boards; the commands are different and detailed in next sections. Info about all the boards is stored in the layer; the right one will be selected by Yocto at build time, depending on the `MACHINE` used in the build command. This is what yocto calls a "multiconfig": it's meant for this very purpose, i.e. same project on different hardware.
+
+
+<!-- TOC --><a name="sdt-import-commands-for-zcu102"></a>
+#### SDT import commands for ZCU102
 ```
 cd <base dir>/yocto-prj
 source edf-init-build-env
 ```
 (note: now we are in `build` subdir)
 ```
-bitbake-layers create-layer ../sources/meta-vivadoprj
-bitbake-layers add-layer ../sources/meta-vivadoprj
-```
-Remove the auto generated `sources/meta-vivadoprj/recipes-example` directory, as we won't use that.
-
-Now we import the SDT (=vivado design) into yocto invoking `gen-machine-conf` :
-```
 MACHINE=qemuarm64 gen-machine-conf parse-sdt \
-    --hw-description ../../vivado-prj/output_sdt \
+    --hw-description ../../vivado-prj/zcu102/output_sdt \
     -c ../sources/meta-vivadoprj/conf \
     --add-config CONFIG_YOCTO_BBMC_CORTEXR5_0_BAREMETAL=y \
-    --machine-name custom-machine
+    --machine-name r5ctrlr-zcu102
 ```
 
 
-<!-- TOC --><a name="import-custom-distro-configuration"></a>
-### Import custom distro configuration
-All the yocto customizations for MaxIV and r5ctrlr project in particular are defined in a custom distro called "maxiv".
-Just copy (merge) the content of the directory `<base dir>/gitcode/yocto` into `<base dir>/yocto-prj`. It's mainly a simple customization of `<base dir>/build/conf` files plus the addition of a new `meta-user` layer that does all the work. Note that this layer also includes the SCPI server, R5 executable and web pages. Some useful shell scripts are also added to the build directory to automate common yocto procedures (build, configure, make a SD card from the image).
+<!-- TOC --><a name="sdt-import-commands-for-enclustra-xu1+st1"></a>
+#### SDT import commands for Enclustra XU1+ST1
+```
+cd <base dir>/yocto-prj
+source edf-init-build-env
+```
+(note: now we are in `build` subdir)
+```
+MACHINE=qemuarm64 gen-machine-conf parse-sdt \
+    --hw-description ../../vivado-prj/enclustra-xu1st1/output_sdt \
+    -c ../sources/meta-vivadoprj/conf \
+    --add-config CONFIG_YOCTO_BBMC_CORTEXR5_0_BAREMETAL=y \
+    --machine-name r5ctrlr-xu1st1
+```
+
 
 <!-- TOC --><a name="build-linux-image"></a>
 ### Build linux image

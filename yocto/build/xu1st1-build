@@ -1,0 +1,25 @@
+#!/bin/bash
+set -x # echo on
+SECONDS=0
+# make clean
+MACHINE=r5ctrlr-xu1st1 bitbake xilinx-bootbin -c cleanall
+MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -c cleanall
+rm -rf ./sstate-cache
+rm -rf ./tmp
+rm -rf ./tmp-r5ctrlr-xu1st1-cortexa53-fsbl
+rm -rf ./tmp-r5ctrlr-xu1st1-cortexr5-0-baremetal
+rm -rf ./tmp-r5ctrlr-xu1st1-microblaze-pmu
+#rebuild
+MACHINE=r5ctrlr-xu1st1 bitbake xilinx-bootbin
+MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image
+# add boot.bin to image EFI partition
+wic cp \
+ tmp/deploy/images/r5ctrlr-xu1st1/boot.bin \
+ tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic:1
+#recompute blockmap
+sudo bmaptool create \
+  -o tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
+  tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+# done
+duration=$SECONDS
+TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"
