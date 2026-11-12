@@ -9,6 +9,7 @@ rm -rf ./tmp
 rm -rf ./tmp-r5ctrlr-xu1st1-cortexa53-fsbl
 rm -rf ./tmp-r5ctrlr-xu1st1-cortexr5-0-baremetal
 rm -rf ./tmp-r5ctrlr-xu1st1-microblaze-pmu
+rm -rf ./saved_images/xu1st1/*
 #rebuild
 MACHINE=r5ctrlr-xu1st1 bitbake xilinx-bootbin
 MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -r ./conf/xu1st1-override.conf
@@ -20,6 +21,11 @@ wic cp \
 sudo bmaptool create \
   -o tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
   tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+#save image to local folder
+cp tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic \
+   ./saved_images/xu1st1/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+cp tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
+   ./saved_images/xu1st1/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap
 # done
 duration=$SECONDS
 TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"

@@ -1,0 +1,13 @@
+#!/bin/bash
+set -x # echo on
+#SECONDS=0
+# write image to SD
+umount /dev/sde1
+umount /dev/sde2
+umount /dev/sde3
+umount /dev/sde4
+sudo bmaptool copy \
+  ./saved_images/xu1st1/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic \
+  /dev/sde
+#duration=$SECONDS
+#TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"
