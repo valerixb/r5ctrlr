@@ -64,10 +64,10 @@ axi {
 /delete-node/ &PL_r5_sleep_timer_0;
 /delete-node/ &PL_axi_gpio_0;
 
-/*
 /delete-node/ &PL_SofiaIO_gpio;
 /delete-node/ &PL_SofiaIO_spi;
 
+/*
 &axi_gpio_0 {
             /delete-property/ interrupt-controller ;
             /delete-property/ interrupt-names ;

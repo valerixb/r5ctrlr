@@ -7,7 +7,7 @@ umount /dev/sde2
 umount /dev/sde3
 umount /dev/sde4
 sudo bmaptool copy \
-  ./saved_images/zcu102/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic \
+  ./saved_images/zcu102/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.xz \
   /dev/sde
 #duration=$SECONDS
 #TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"

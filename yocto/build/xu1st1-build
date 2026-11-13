@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x # echo on
+# start stopwatch
 SECONDS=0
 # make clean
 MACHINE=r5ctrlr-xu1st1 bitbake xilinx-bootbin -c cleanall
@@ -26,6 +27,14 @@ cp tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-com
    ./saved_images/xu1st1/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
 cp tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
    ./saved_images/xu1st1/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap
+# compress the saved image (it saves a lot of space) and cleanup
+# (the original wic image is automatically deleted by xz after compression)
+xz ./saved_images/xu1st1/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+rm -rf ./sstate-cache
+rm -rf ./tmp
+rm -rf ./tmp-r5ctrlr-xu1st1-cortexa53-fsbl
+rm -rf ./tmp-r5ctrlr-xu1st1-cortexr5-0-baremetal
+rm -rf ./tmp-r5ctrlr-xu1st1-microblaze-pmu
 # done
 duration=$SECONDS
 TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"
