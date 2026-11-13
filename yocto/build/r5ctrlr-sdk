@@ -5,9 +5,9 @@ SECONDS=0
 MACHINE=amd-cortexa53-common bitbake meta-edf-app-sdk -r ./conf/zcu102-override.conf -c cleanall
 rm -rf ./sstate-cache
 rm -rf ./tmp
-rm -rf ./tmp-custom-machine-cortexa53-fsbl
-rm -rf ./tmp-custom-machine-microblaze-pmu
-rm -rf ./tmp-custom-machine-cortexr5-0-baremetal
+rm -rf ./tmp-r5ctrlr-zcu102-cortexa53-fsbl
+rm -rf ./tmp-r5ctrlr-zcu102-microblaze-pmu
+rm -rf ./tmp-r5ctrlr-zcu102-cortexr5-0-baremetal
 MACHINE=amd-cortexa53-common bitbake meta-edf-app-sdk -r ./conf/zcu102-override.conf
 duration=$SECONDS
 TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"
