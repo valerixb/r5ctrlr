@@ -297,9 +297,9 @@ In Vitis use the menu command:
 ```
 file/new component/platform
 ```
-Call the platform "r5ctrlr_platform"; it's important to use the right platform and domain names, as they are referenced in the makefiles for the standalone compilation flow. The wizard asks to define a first platform, but does not let you cjoose the name, so we make a temporary one that we delete right away: choose the default standalone psu_cortexa53_0. When the wizard finishes creating the platform, open it and delete the `psu_cortesa53_0` domain (hober on it with the mouse and choose "delete". If created, also delete the domain `zynqmp_fsbl`.
+Call the platform "r5ctrlr_platform"; it's important to use the right platform and domain names, as they are referenced in the makefiles for the standalone compilation flow. The wizard asks to define a first domain, but does not let you choose the name, so we make a temporary one that we delete right away: choose the default standalone psu_cortexa53_0. When the wizard finishes creating the platform, open it and delete the `psu_cortesa53_0` domain (hover on it with the mouse and choose "delete"). If present, also delete the domain `zynqmp_fsbl`.
 
-Start adding a R5#0/baremetal domain called "R5_0_baremetal"; add to it `libmetal` and `openamp`. 
+Now add a R5#0/baremetal domain called "R5_0_baremetal"; add to it `libmetal` and `openamp`. 
 In the R5 BSP, assign `UART1` as both stdin and stout (there are two separate lines), instead of the default UART0. In addition, set the timer to `PL_r5_sleep_timer_0` instead of the default (which is used as sampling timer instead).
 
 Regenerate the BSP
