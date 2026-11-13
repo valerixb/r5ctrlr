@@ -290,17 +290,17 @@ Start making a directory called:
 ```
 <base dir>/vitis-workspace
 ```
-cd there, run: ```vitis&``` and choose the previous directory as workspace. Click OK if it complains about "file watch errors": it's not a real problem.
+cd there, run: ```vitis``` and choose the previous directory as workspace. Click OK if it complains about "file watch errors": it's not a real problem.
 
 First, we need to make a new "platform"; copy the `.xsa` from one of the board-specific subdirectories of `vivado-prj` to `vitis-workspace` directory, so they are separated and one can work on vivado while using an old, stable xsa for vitis. As said earlier, any of the board .xsa can be used for cross-compilation, as the executables are common to all FPGA boards.
 In Vitis use the menu command:
 ```
 file/new component/platform
 ```
-Call the platform "r5ctrlr_platform"; it's important to use the right platform and domain names, as they are referenced in the makefiles for the standalone compilation flow.
+Call the platform "r5ctrlr_platform"; it's important to use the right platform and domain names, as they are referenced in the makefiles for the standalone compilation flow. The wizard asks to define a first platform, but does not let you cjoose the name, so we make a temporary one that we delete right away: choose the default standalone psu_cortexa53_0. When the wizard finishes creating the platform, open it and delete the `psu_cortesa53_0` domain (hober on it with the mouse and choose "delete". If created, also delete the domain `zynqmp_fsbl`.
 
 Start adding a R5#0/baremetal domain called "R5_0_baremetal"; add to it `libmetal` and `openamp`. 
-In the R5 BSP, assign UART1 as stdin/stout, instead of the default UART0. In addition, set the timer to `PL_r5_sleep_timer_0` instead of the default (which is used as sampling timer instead).
+In the R5 BSP, assign `UART1` as both stdin and stout (there are two separate lines), instead of the default UART0. In addition, set the timer to `PL_r5_sleep_timer_0` instead of the default (which is used as sampling timer instead).
 
 Regenerate the BSP
 
