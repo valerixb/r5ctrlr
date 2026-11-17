@@ -1899,6 +1899,34 @@ static struct remoteproc *SetupRpmsg(int proc_index, int rsc_index)
 
 // -----------------------------------------------------------
 
+static inline s16 sat_double_to_s16(double x)
+  {
+  if(x != x)            // NaN
+    return 0;
+  if(x >= 32767.0)
+    return INT16_MAX;
+  if(x <= -32768.0)
+    return INT16_MIN;
+  return (int16_t)lrint(x);   // round to nearest
+  }
+
+
+// -----------------------------------------------------------
+
+static inline u16 sat_double_to_u16(double x)
+  {
+  if(x != x)             // NaN
+    return 0;
+  if(x >= 65535.0)
+    return UINT16_MAX;
+  if(x <= 0.0)
+    return 0;
+  return (uint16_t)lrint(x);   // round to nearest, ties to even
+  }
+
+
+// -----------------------------------------------------------
+
 void Setup_Analog_Card(void)
   {
   int status=XST_SUCCESS;
@@ -2018,11 +2046,21 @@ void Analog_Card_Write_DAC(s16 *ptr)
   {
   // DAC AD3552 is offset binary;
   // usual conversion from 2's complement is done inverting the MSB,
-  // but here I prefer to offset and round, which is clearer
+  // but here I prefer to offset and round, which is clearer.
+  // In addition, for AD3552 a specific scaling formula must be used;
+  // see datasheet pag 26, 27 
 
   #ifdef ANALOG_CARD_CN0585
-  (void)CN0585_WriteDacSamples(0,(u16)round(*ptr    +AD3552_OFFS), (u16)round(*(ptr+1)+AD3552_OFFS));
-  (void)CN0585_WriteDacSamples(1,(u16)round(*(ptr+2)+AD3552_OFFS), (u16)round(*(ptr+3)+AD3552_OFFS));
+  (void)CN0585_WriteDacSamples(0,sat_double_to_u16((*ptr)    *AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
+                                 sat_double_to_u16((*(ptr+1))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
+  (void)CN0585_WriteDacSamples(1,sat_double_to_u16((*(ptr+2))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
+                                 sat_double_to_u16((*(ptr+3))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
+  /* cicci
+  (void)CN0585_WriteDacSamples(0,(u16)round((*ptr)    *AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
+                                 (u16)round((*(ptr+1))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
+  (void)CN0585_WriteDacSamples(1,(u16)round((*(ptr+2))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
+                                 (u16)round((*(ptr+3))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
+  */                               
   #endif
 
   #ifdef ANALOG_CARD_SOFIAIO_SPI
@@ -2607,6 +2645,7 @@ int main()
 
       for(i=0; i<4; i++)
         {
+        /* cicci
         // FIRST I add the offset, THEN I saturate
         DACtemp[i]=g_ydac[i]*ANALOG_FULLSCALE_CNT+gDAC_offs_cnt[i];
         if(DACtemp[i]>(ANALOG_FULLSCALE_CNT-1))
@@ -2614,6 +2653,8 @@ int main()
         else if(DACtemp[i]<-ANALOG_FULLSCALE_CNT)
           DACtemp[i]=-ANALOG_FULLSCALE_CNT;
         dacval[i]=(s16)round(DACtemp[i]);
+        */
+        dacval[i]=sat_double_to_s16(g_ydac[i]*ANALOG_FULLSCALE_CNT+gDAC_offs_cnt[i]);
         }
       
       Analog_Card_Write_DAC(dacval);

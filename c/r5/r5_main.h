@@ -117,6 +117,8 @@ void SetSamplingFreq(u32 f);
 int SetupAXItimer(void);
 int SetupIRQs(void);
 int CleanupIRQs(void);
+static inline s16 sat_double_to_s16(double x);
+static inline u16 sat_double_to_u16(double x);
 void Setup_Analog_Card(void);
 void Setup_Digital_Card(void);
 void Analog_Card_DigIN(u16 *ptr);
