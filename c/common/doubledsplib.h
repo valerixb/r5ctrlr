@@ -19,6 +19,8 @@
 // I need r5_main.h to have ARMR5 #defined
 #ifdef ARMR5
 #include "xil_types.h"
+#define EPS (1.e-6)
+#define BIG_NUMBER (1.e6)
 #endif
 
 // ##########  types  #######################

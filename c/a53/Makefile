@@ -1,12 +1,12 @@
 # Sentinel file to track whether setup has been run
 SETUP_SENTINEL := .setup_done
-SETUP_SCRIPT   := /xilinxworks/ZCU102/v2025.2/r5ctrlr/sdk-linux/environment-setup-cortexa72-cortexa53-amd-linux
+SETUP_SCRIPT   := ../../../sdk-linux/environment-setup-cortexa72-cortexa53-amd-linux
 
 OBJ_LOCAL = linux_main.o SCPIserver.o
 COMMON_DIR = ../common
 OBJ_COMMON = platform.o rproc.o rsc_table.o sample_shmem.o
 TARGET = A53app.elf
-SYSROOT_PATH = /xilinxworks/ZCU102/v2025.2/r5ctrlr/sdk-linux/sysroots/cortexa72-cortexa53-amd-linux
+SYSROOT_PATH = ../../../sdk-linux/sysroots/cortexa72-cortexa53-amd-linux
 
 CC = /tools/Xilinx/2025.2/Vitis/gnu/aarch64/lin/aarch64-linux/bin/aarch64-linux-gnu-gcc
 CFLAGS = -O0 -g3 -Wall -I../common \

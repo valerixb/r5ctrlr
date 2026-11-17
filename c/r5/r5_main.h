@@ -66,9 +66,9 @@
 #define INTC_REGBANK_IRQ_ID   XPS_FPGA2_INT_ID
 // PL regbank has base address 0x8002_0000,  which is XPAR_REGBANK_0_BASEADDR in xparameters.h
 #define REGBANK               (volatile unsigned int *)(XPAR_REGBANK_0_BASEADDR)
-// PL_GPIO base address is 0x8001_0000, which is XPAR_AXI_GPIO_0_BASEADDR in xparameters.h
-#define PL_GPIO_BADDR XPAR_AXI_GPIO_0_BASEADDR
-// buttons are on GPIO channel 1, LEDs on channel 2; enable IRQ for channel 1
+// PL GPIO base address is 0x8001_0000, which is XPAR_PL_AXI_GPIO_0_BASEADDR in xparameters.h
+#define PL_GPIO_BADDR XPAR_PL_AXI_GPIO_0_BASEADDR
+// the button is on GPIO channel 1; enable IRQ for channel 1
 #define GPIO_BUTTON_IRQ_MASK  XGPIO_IR_CH1_MASK
 // AXI timer ID is 0, even if it's not defined in xparameters.h
 #define TIMER_DEVICE_ID        0
@@ -117,6 +117,8 @@ void SetSamplingFreq(u32 f);
 int SetupAXItimer(void);
 int SetupIRQs(void);
 int CleanupIRQs(void);
+static inline s16 sat_double_to_s16(double x);
+static inline u16 sat_double_to_u16(double x);
 void Setup_Analog_Card(void);
 void Setup_Digital_Card(void);
 void Analog_Card_DigIN(u16 *ptr);

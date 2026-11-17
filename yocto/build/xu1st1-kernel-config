@@ -1,0 +1,9 @@
+#!/bin/bash
+set -x # echo on
+#SECONDS=0
+MACHINE=r5ctrlr-xu1st1 bitbake linux-xlnx -c menuconfig
+cp \
+  ./tmp/work/r5ctrlr-xu1st1-amd-linux/linux-xlnx/6.12.40+git+v2025.2/linux-custom_machine-standard-build/.config \
+  ../sources/meta-user/recipes-kernel/linux/linux-xlnx/xu1st1/usr.cfg
+#duration=$SECONDS
+#TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"

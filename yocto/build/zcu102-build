@@ -1,0 +1,40 @@
+#!/bin/bash
+set -x # echo on
+# start stopwatch
+SECONDS=0
+# make clean
+MACHINE=r5ctrlr-zcu102 bitbake xilinx-bootbin -c cleanall
+MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -r ./conf/zcu102-override.conf -c cleanall
+rm -rf ./sstate-cache
+rm -rf ./tmp
+rm -rf ./tmp-r5ctrlr-zcu102-cortexa53-fsbl
+rm -rf ./tmp-r5ctrlr-zcu102-cortexr5-0-baremetal
+rm -rf ./tmp-r5ctrlr-zcu102-microblaze-pmu
+rm -rf ./saved_images/zcu102/*
+#rebuild
+MACHINE=r5ctrlr-zcu102 bitbake xilinx-bootbin
+MACHINE=amd-cortexa53-common bitbake edf-linux-disk-image -r ./conf/zcu102-override.conf
+# add boot.bin to image EFI partition
+wic cp \
+ tmp/deploy/images/r5ctrlr-zcu102/boot.bin \
+ tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic:1
+#recompute blockmap
+sudo bmaptool create \
+  -o tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
+  tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+#save image to local folder
+cp tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic \
+   ./saved_images/zcu102/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+cp tmp/deploy/images/amd-cortexa53-common/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap \
+   ./saved_images/zcu102/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic.bmap
+# compress the saved image (it saves a lot of space) and cleanup
+# (the original wic image is automatically deleted by xz after compression)
+xz ./saved_images/zcu102/edf-linux-disk-image-amd-cortexa53-common.rootfs.wic
+rm -rf ./sstate-cache
+rm -rf ./tmp
+rm -rf ./tmp-r5ctrlr-zcu102-cortexa53-fsbl
+rm -rf ./tmp-r5ctrlr-zcu102-cortexr5-0-baremetal
+rm -rf ./tmp-r5ctrlr-zcu102-microblaze-pmu
+# done
+duration=$SECONDS
+TZ=UTC0 printf 'Yocto compile time was %(%H:%M:%S)T\n' "$duration"
