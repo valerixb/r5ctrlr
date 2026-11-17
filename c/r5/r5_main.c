@@ -2055,12 +2055,6 @@ void Analog_Card_Write_DAC(s16 *ptr)
                                  sat_double_to_u16((*(ptr+1))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
   (void)CN0585_WriteDacSamples(1,sat_double_to_u16((*(ptr+2))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
                                  sat_double_to_u16((*(ptr+3))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
-  /* cicci
-  (void)CN0585_WriteDacSamples(0,(u16)round((*ptr)    *AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
-                                 (u16)round((*(ptr+1))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
-  (void)CN0585_WriteDacSamples(1,(u16)round((*(ptr+2))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS),
-                                 (u16)round((*(ptr+3))*AD3552_AMPL/ANALOG_FULLSCALE_CNT + AD3552_OFFS));
-  */                               
   #endif
 
   #ifdef ANALOG_CARD_SOFIAIO_SPI
@@ -2645,15 +2639,7 @@ int main()
 
       for(i=0; i<4; i++)
         {
-        /* cicci
         // FIRST I add the offset, THEN I saturate
-        DACtemp[i]=g_ydac[i]*ANALOG_FULLSCALE_CNT+gDAC_offs_cnt[i];
-        if(DACtemp[i]>(ANALOG_FULLSCALE_CNT-1))
-          DACtemp[i]=(ANALOG_FULLSCALE_CNT-1);
-        else if(DACtemp[i]<-ANALOG_FULLSCALE_CNT)
-          DACtemp[i]=-ANALOG_FULLSCALE_CNT;
-        dacval[i]=(s16)round(DACtemp[i]);
-        */
         dacval[i]=sat_double_to_s16(g_ydac[i]*ANALOG_FULLSCALE_CNT+gDAC_offs_cnt[i]);
         }
       
